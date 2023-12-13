@@ -88,9 +88,9 @@ def add_entry_to_database(entry, user_id):
     sess.commit()
     return True
 
-# # Assuming your dates are in a format like '2023-11-11 10:35:46 +0000'
-# def parse_date(date_str):
-#     return datetime.strptime(date_str.split(' ')[0], '%Y-%m-%d')
+# Assuming your dates are in a format like '2023-11-11 10:35:46 +0000'
+def parse_date(date_str):
+    return datetime.strptime(date_str.split(' ')[0], '%Y-%m-%d')
 
 def email_user(user_id, message, records_uploaded=0):
     headers = { 'Content-Type': 'application/json'}
