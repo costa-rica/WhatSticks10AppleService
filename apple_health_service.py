@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 import logging
 from logging.handlers import RotatingFileHandler
+from sys import argv
 
 match os.environ.get('FLASK_CONFIG_TYPE'):
     case 'dev':
