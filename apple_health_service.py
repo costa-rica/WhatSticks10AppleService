@@ -3,7 +3,7 @@ import json
 from ws_models import sess, engine, AppleHealthKit
 from ws_config import ConfigLocal, ConfigDev, ConfigProd
 from datetime import datetime
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import logging
 from logging.handlers import RotatingFileHandler
 from sys import argv
@@ -113,18 +113,31 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bo
     logger_apple.info(f"- count of db records: {count_of_user_apple_health_records}")
     logger_apple.info(f"--- add_apple_health_to_database COMPLETE ---")
 
+# def get_existing_user_data(user_id):
+#     # user_id = 1
+#     # Define the query
+#     query = f"""
+#     SELECT * 
+#     FROM apple_health_kit 
+#     WHERE user_id = {user_id};
+#     """
+#     # Execute the query and create a DataFrame
+#     df_existing_user_data = pd.read_sql_query(query, engine)
+
 def get_existing_user_data(user_id):
-    # user_id = 1
-    # Define the query
-    query = f"""
-    SELECT * 
-    FROM apple_health_kit 
-    WHERE user_id = {user_id};
-    """
-    # Execute the query and create a DataFrame
-    df_existing_user_data = pd.read_sql_query(query, engine)
-
-
+    try:
+        # Define the query using a parameterized statement for safety
+        query = """
+        SELECT * 
+        FROM apple_health_kit 
+        WHERE user_id = :user_id;
+        """
+        # Execute the query and create a DataFrame
+        df_existing_user_data = pd.read_sql_query(query, engine, params={'user_id': user_id})
+        return df_existing_user_data
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+        return None
 
 # # Assuming your dates are in a format like '2023-11-11 10:35:46 +0000'
 # def parse_date(date_str):
