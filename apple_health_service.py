@@ -48,7 +48,7 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bo
         apple_json_data = json.load(file)
 
 
-    sorted_request_json = sorted(apple_json_data, key=lambda x: parse_date(x.get('startDate')))
+    sorted_request_json = sorted(apple_json_data, key=lambda x: parse_date(x.get('startDate')), reverse=True)
     count_of_added_records = 0
     for i in range(0, len(sorted_request_json)):
         # batch = sorted_request_json[i:i + batch_size]
