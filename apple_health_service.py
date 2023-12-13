@@ -1,8 +1,5 @@
 import os
 import json
-# import pandas as pd
-# import sys
-# sys.path.insert(0, '/Users/nick/Documents/exSqlalchemyUniqueConstraint')
 from ws_models import sess, AppleHealthKit
 from ws_config import ConfigLocal, ConfigDev, ConfigProd
 from datetime import datetime
@@ -30,7 +27,7 @@ logger_apple = logging.getLogger(__name__)
 logger_apple.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(config.WS_APPLE_SERVICE_DIR,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config.APPLE_SERVICE_ROOT,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -56,7 +53,7 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bo
             if add_entry_to_database(sorted_request_json[i], user_id):
                 count_of_added_records += 1
                 sess.commit()  # Commit the transaction for the individual entry
-            logger_apple.info(f"- adding i: {count_of_added_records} -")
+            # logger_apple.info(f"- adding i: {count_of_added_records} -")
         except IntegrityError as e:
             sess.rollback()  # Rollback the transaction in case of an IntegrityError
             logger_apple.info(f"IntegrityError encountered in batch: {e}")
