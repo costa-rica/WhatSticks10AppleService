@@ -46,6 +46,10 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bo
 
     df_existing_user_data = get_existing_user_data(user_id)
 
+    logger_apple.info(f"- df_existing_user_data : {len(df_existing_user_data)} -")
+    logger_apple.info(f"- {df_existing_user_data.head()} -")
+    logger_apple.info(f"- ------------------- -")
+
     # ws_data_folder ="/Users/nick/Documents/_testData/_What_Sticks"
     with open(os.path.join(config.APPLE_HEALTH_DIR, apple_json_data_filename), 'r') as new_user_data_path_and_filename:
         # apple_json_data = json.load(new_user_data_path_and_filename)
