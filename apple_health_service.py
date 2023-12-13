@@ -39,6 +39,7 @@ logger_apple.addHandler(stream_handler)
 
 def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bool=False):
     logger_apple.info(f"- accessed add_apple_health_to_database for user_id: {user_id} -")
+    print(f"- accessed add_apple_health_to_database for user_id: {user_id} -")
     user_id = int(user_id)
     # ws_data_folder ="/Users/nick/Documents/_testData/_What_Sticks"
     with open(os.path.join(config.APPLE_HEALTH_DIR, apple_json_data_filename), 'r') as file:
@@ -101,3 +102,5 @@ def email_user(user_id, message, records_uploaded=0):
                                     data=str(json.dumps(payload)))
     
     return r_email.status_code
+
+add_apple_health_to_database(argv[1], argv[2])
