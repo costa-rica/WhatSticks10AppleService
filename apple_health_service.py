@@ -3,11 +3,12 @@ import json
 from ws_models import sess, engine, AppleHealthKit
 from ws_config import ConfigLocal, ConfigDev, ConfigProd
 from datetime import datetime
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 import logging
 from logging.handlers import RotatingFileHandler
 from sys import argv
 import pandas as pd
+import requests
 
 match os.environ.get('FLASK_CONFIG_TYPE'):
     case 'dev':
@@ -40,20 +41,24 @@ logger_apple.addHandler(file_handler)
 logger_apple.addHandler(stream_handler)
 
 def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bool=False):
+    logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
     logger_apple.info(f"- accessed add_apple_health_to_database for user_id: {user_id} -")
-    print(f"- accessed add_apple_health_to_database for user_id: {user_id} -")
     user_id = int(user_id)
 
     df_existing_user_data = get_existing_user_data(user_id)
 
-    logger_apple.info(f"- df_existing_user_data : {len(df_existing_user_data)} -")
-    logger_apple.info(f"- {df_existing_user_data.head()} -")
+    logger_apple.info(f"- df_existing_user_data count : {len(df_existing_user_data)} -")
+    logger_apple.info(f"- {df_existing_user_data.head(1)} -")
     logger_apple.info(f"- ------------------- -")
 
     # ws_data_folder ="/Users/nick/Documents/_testData/_What_Sticks"
     with open(os.path.join(config.APPLE_HEALTH_DIR, apple_json_data_filename), 'r') as new_user_data_path_and_filename:
         # apple_json_data = json.load(new_user_data_path_and_filename)
         df_new_user_data = pd.read_json(new_user_data_path_and_filename)
+
+    logger_apple.info(f"- df_new_user_data count : {len(df_new_user_data)} -")
+    logger_apple.info(f"- {df_new_user_data.head(1)} -")
+    logger_apple.info(f"- ------------------- -")
 
     # Convert the 'value' column in both dataframes to string
     df_new_user_data['value'] = df_new_user_data['value'].astype(str)
@@ -90,39 +95,15 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bo
     rename_dict['quantity_x']='quantity'
     df_unique_new_user_data.rename(columns=rename_dict, inplace=True)
 
-    added_rows = df_unique_new_user_data.to_sql('apple_health_kit', con=engine, if_exists='append', index=False)
+    count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_kit', con=engine, if_exists='append', index=False)
 
-    # # sorted_request_json = sorted(apple_json_data, key=lambda x: parse_date(x.get('startDate')), reverse=True)
-    # count_of_added_records = 0
-    # for i in range(0, len(sorted_request_json)):
-    #     # batch = sorted_request_json[i:i + batch_size]
-    #     try:
-    #         if add_entry_to_database(sorted_request_json[i], user_id):
-    #             count_of_added_records += 1
-    #             sess.commit()  # Commit the transaction for the individual entry
-    #         # logger_apple.info(f"- adding i: {count_of_added_records} -")
-    #     except IntegrityError as e:
-    #         sess.rollback()  # Rollback the transaction in case of an IntegrityError
-    #         logger_apple.info(f"IntegrityError encountered in batch: {e}")
-    #         if check_all_bool:
-    #             continue
-    #         else:
-    #             break
-    # print(f"- count_of_added_records: {count_of_added_records} -")
+    logger_apple.info(f"- count_of_records_added_to_db: {count_of_records_added_to_db} -")
     count_of_user_apple_health_records = sess.query(AppleHealthKit).filter_by(user_id=user_id).count()
-    logger_apple.info(f"- count of db records: {count_of_user_apple_health_records}")
+    logger_apple.info(f"- count of records in db: {count_of_user_apple_health_records}")
     logger_apple.info(f"--- add_apple_health_to_database COMPLETE ---")
+    
+    call_api_notify_completion(user_id,count_of_records_added_to_db)
 
-# def get_existing_user_data(user_id):
-#     # user_id = 1
-#     # Define the query
-#     query = f"""
-#     SELECT * 
-#     FROM apple_health_kit 
-#     WHERE user_id = {user_id};
-#     """
-#     # Execute the query and create a DataFrame
-#     df_existing_user_data = pd.read_sql_query(query, engine)
 
 def get_existing_user_data(user_id):
     try:
@@ -136,21 +117,18 @@ def get_existing_user_data(user_id):
         df_existing_user_data = pd.read_sql_query(query, engine, params={'user_id': user_id})
         return df_existing_user_data
     except SQLAlchemyError as e:
-        print(f"An error occurred: {e}")
+        logger_apple.info(f"An error occurred: {e}")
         return None
 
-# # Assuming your dates are in a format like '2023-11-11 10:35:46 +0000'
-# def parse_date(date_str):
-#     return datetime.strptime(date_str.split(' ')[0], '%Y-%m-%d')
 
-def email_user(user_id, message, records_uploaded=0):
+
+def call_api_notify_completion(user_id,count_of_records_added_to_db):
     headers = { 'Content-Type': 'application/json'}
     payload = {}
-    payload['password'] = config.WSH_API_PASSWORD
+    payload['WS_API_PASSWORD'] = config.WS_API_PASSWORD
     payload['user_id'] = user_id
-    payload['message'] = message
-    payload['records_uploaded'] = records_uploaded
-    r_email = requests.request('GET',config.WSH_API_URL_BASE + '/send_email', headers=headers, 
+    payload['count_of_records_added_to_db'] = f"{count_of_records_added_to_db:,}"
+    r_email = requests.request('POST',config.API_URL + '/apple_health_subprocess_complete', headers=headers, 
                                     data=str(json.dumps(payload)))
     
     return r_email.status_code
