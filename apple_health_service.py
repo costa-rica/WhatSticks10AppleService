@@ -1,6 +1,6 @@
 import os
 import json
-from ws_models import sess, AppleHealthKit
+from ws_models import sess, engine, AppleHealthKit
 from ws_config import ConfigLocal, ConfigDev, ConfigProd
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
