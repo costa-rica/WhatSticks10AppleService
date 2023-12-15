@@ -40,8 +40,32 @@ stream_handler.setFormatter(formatter_terminal)
 logger_apple.addHandler(file_handler)
 logger_apple.addHandler(stream_handler)
 
-def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bool=False):
+def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool):
+
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
+    logger_apple.info(f"- user_id: {user_id} -")
+    logger_apple.info(f"- apple_json_data_filename: {apple_json_data_filename} -")
+    logger_apple.info(f"- add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
+    add_data_bool = add_data_bool == 'True'
+    logger_apple.info(f"- [Converted to Bool] add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
+    logger_apple.info(f"- dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
+    dashboard_bool = dashboard_bool == 'True'
+    logger_apple.info(f"- [Converted to Bool] dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
+
+
+    count_of_records_added_to_db = 0
+    if add_data_bool:
+        count_of_records_added_to_db = add_apple_health_to_database(user_id, apple_json_data_filename)
+        
+        # notify user
+        if count_of_records_added_to_db > 0:
+            call_api_notify_completion(user_id,count_of_records_added_to_db)
+    if dashboard_bool:
+        create_dashboard_json_file(user_id)
+    
+
+
+def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bool=False):
     logger_apple.info(f"- accessed add_apple_health_to_database for user_id: {user_id} -")
     user_id = int(user_id)
 
@@ -102,8 +126,12 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bo
     logger_apple.info(f"- count of records in db: {count_of_user_apple_health_records}")
     logger_apple.info(f"--- add_apple_health_to_database COMPLETE ---")
     
-    call_api_notify_completion(user_id,count_of_records_added_to_db)
-
+    return count_of_records_added_to_db
+    # # If new records found and added to database create 
+    # if count_of_records_added_to_db > 0:
+    #     create_dashboard_json_file(user_id)
+    # else:
+    #     call_api_notify_completion(user_id,count_of_records_added_to_db)
 
 def get_existing_user_data(user_id):
     try:
@@ -120,9 +148,8 @@ def get_existing_user_data(user_id):
         logger_apple.info(f"An error occurred: {e}")
         return None
 
-
-
 def call_api_notify_completion(user_id,count_of_records_added_to_db):
+    logger_apple.info(f"- WSAS sending WSAPI call to send email notification to user: {user_id} -")
     headers = { 'Content-Type': 'application/json'}
     payload = {}
     payload['WS_API_PASSWORD'] = config.WS_API_PASSWORD
@@ -133,4 +160,38 @@ def call_api_notify_completion(user_id,count_of_records_added_to_db):
     
     return r_email.status_code
 
-add_apple_health_to_database(argv[1], argv[2])
+def create_dashboard_json_file(user_id):
+    logger_apple.info(f"- WSAS creating dashboard file for user: {user_id} -")
+    arry_dash_health_data = []
+
+    #get user's oura record count
+    dashboard_health_data_object_oura={}
+    dashboard_health_data_object_oura['name']="Oura Ring"
+    record_count_oura = sess.query(OuraSleepDescriptions).filter_by(user_id=user_id).all()
+    dashboard_health_data_object_oura['recordCount']="{:,}".format(len(record_count_oura))
+    arry_dash_health_data.append(dashboard_health_data_object_oura)
+
+    #get user's apple health record count
+    dashboard_health_data_object_apple_health={}
+    dashboard_health_data_object_apple_health['name']="Apple Health Data"
+    record_count_apple_health = sess.query(AppleHealthKit).filter_by(user_id=user_id).all()
+    dashboard_health_data_object_apple_health['recordCount']="{:,}".format(len(record_count_apple_health))
+    arry_dash_health_data.append(dashboard_health_data_object_apple_health)
+
+    arryDataDict = []
+    corr_sleep_steps_value = corr_sleep_steps(user_id = user_id)
+    if corr_sleep_steps != "insufficient data":
+        print(f"- calculated correlation: {corr_sleep_steps_value}-")
+        dataDict = {}
+        dataDict['Dependent Variable'] = "Daily sleep time in hours"
+        dataDict['Daily Steps'] = f"{corr_sleep_steps_value}"
+        arryDataDict.append(dataDict)
+
+        dashboard_health_data_object_apple_health['arryDataDict'] = arryDataDict
+    
+    logger_apple.info(f"- WSAS COMPLETED dashboard file for user: {user_id} -")
+    # call_api_notify_completion(user_id,count_of_records_added_to_db)
+
+
+# add_apple_health_to_database(argv[1], argv[2])
+what_sticks_health_service(argv[1],argv[2],argv[3],argv[4])
