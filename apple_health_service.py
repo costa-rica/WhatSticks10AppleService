@@ -180,7 +180,7 @@ def create_dashboard_json_file(user_id):
 
     arryDataDict = []
     corr_sleep_steps_value = corr_sleep_steps(user_id = user_id)
-    if corr_sleep_steps != "insufficient data":
+    if corr_sleep_steps_value != "insufficient data":
         print(f"- calculated correlation: {corr_sleep_steps_value}-")
         dataDict = {}
         dataDict['Dependent Variable'] = "Daily sleep time in hours"
