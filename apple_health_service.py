@@ -190,6 +190,13 @@ def create_dashboard_json_file(user_id):
 
         dashboard_health_data_object_apple_health['arryDataDict'] = arryDataDict
     
+    # Save the user dashboard file here
+    user_dashboard_json_file_name = f"Dashboard-user_id{user_id}.json"
+    json_data_path_and_name = os.path.join(config.DASHBOARD_FILES_DIR, user_dashboard_json_file_name)
+    with open(json_data_path_and_name, 'w') as file:
+        json.dump(arry_dash_health_data, file)
+
+
     logger_apple.info(f"- WSAS COMPLETED dashboard file for user: {user_id} -")
     # call_api_notify_completion(user_id,count_of_records_added_to_db)
 
