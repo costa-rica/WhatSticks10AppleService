@@ -182,6 +182,7 @@ def create_dashboard_table_object_json_file(user_id):
     # new file name:
     user_sleep_dash_json_file_name = f"dt_sleep01_{user_id:04}.json"
     json_data_path_and_name = os.path.join(config.DASHBOARD_FILES_DIR, user_sleep_dash_json_file_name)
+    print(f"Writing file name: {json_data_path_and_name}")
     with open(json_data_path_and_name, 'w') as file:
         json.dump(arry_dash_health_data, file)
 
