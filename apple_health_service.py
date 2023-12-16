@@ -179,8 +179,17 @@ def create_dashboard_table_object_json_file(user_id):
         logger_apple.info(corr_sleep_steps_value)
         indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
     
+    print("--- inspecting user_id ----")
+    print(user_id)
+    print(f"user_id type: {type(user_id)}")
+    print(f"{user_id}")
+    print(f"{user_id:04}")
+
+    
     # new file name:
+
     user_sleep_dash_json_file_name = f"dt_sleep01_{user_id:04}.json"
+
     json_data_path_and_name = os.path.join(config.DASHBOARD_FILES_DIR, user_sleep_dash_json_file_name)
     print(f"Writing file name: {json_data_path_and_name}")
     with open(json_data_path_and_name, 'w') as file:
