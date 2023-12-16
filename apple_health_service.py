@@ -178,68 +178,18 @@ def create_dashboard_table_object_json_file(user_id):
         logger_apple.info(f"- calculated correlation: {corr_sleep_steps_value}; below is non-string value: -")
         logger_apple.info(corr_sleep_steps_value)
         indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
-    
-    print("--- inspecting user_id ----")
-    print(user_id)
-    print(f"user_id type: {type(user_id)}")
-    print(f"{user_id}")
-    print(f"{user_id:04}")
-    print(f"{int(user_id):04}")
-
-    
+       
     # new file name:
-
+    # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
     user_sleep_dash_json_file_name = f"dt_sleep01_{int(user_id):04}.json"
 
     json_data_path_and_name = os.path.join(config.DASHBOARD_FILES_DIR, user_sleep_dash_json_file_name)
     print(f"Writing file name: {json_data_path_and_name}")
     with open(json_data_path_and_name, 'w') as file:
-        json.dump(arry_dash_health_data, file)
-
+        json.dump(dashboard_table_object, file)
     
     logger_apple.info(f"- WSAS COMPLETED dashboard file for user: {user_id} -")
     logger_apple.info(f"- WSAS COMPLETED dashboard file path: {json_data_path_and_name} -")
-    
-    #### OLD ####
-
-    # arry_dash_health_data = []
-
-    # #get user's oura record count
-    # dashboard_health_data_object_oura={}
-    # dashboard_health_data_object_oura['name']="Oura Ring"
-    # record_count_oura = sess.query(OuraSleepDescriptions).filter_by(user_id=user_id).all()
-    # dashboard_health_data_object_oura['recordCount']="{:,}".format(len(record_count_oura))
-    # arry_dash_health_data.append(dashboard_health_data_object_oura)
-
-    # #get user's apple health record count
-    # dashboard_health_data_object_apple_health={}
-    # dashboard_health_data_object_apple_health['name']="Apple Health Data"
-    # record_count_apple_health = sess.query(AppleHealthKit).filter_by(user_id=user_id).all()
-    # dashboard_health_data_object_apple_health['recordCount']="{:,}".format(len(record_count_apple_health))
-    # arry_dash_health_data.append(dashboard_health_data_object_apple_health)
-
-    # arryDataDict = []
-    # corr_sleep_steps_value = corr_sleep_steps(user_id = user_id)
-    # if corr_sleep_steps_value != "insufficient data":
-    #     print(f"- calculated correlation: {corr_sleep_steps_value}-")
-    #     dataDict = {}
-    #     dataDict['Dependent Variable'] = "Daily sleep time in hours"
-    #     dataDict['Daily Steps'] = f"{corr_sleep_steps_value}"
-    #     arryDataDict.append(dataDict)
-
-    #     dashboard_health_data_object_apple_health['arryDataDict'] = arryDataDict
-    
-    # # Save the user dashboard file here
-    # # user_dashboard_json_file_name = f"Dashboard-user_id{user_id}.json"
-    # # new file name:
-    # user_sleep_dash_json_file_name = f"dt_sleep01_{user_id:04}"
-    # json_data_path_and_name = os.path.join(config.DASHBOARD_FILES_DIR, user_dashboard_json_file_name)
-    # with open(json_data_path_and_name, 'w') as file:
-    #     json.dump(arry_dash_health_data, file)
-
-
-    # logger_apple.info(f"- WSAS COMPLETED dashboard file for user: {user_id} -")
-    # # call_api_notify_completion(user_id,count_of_records_added_to_db)
 
 
 # add_apple_health_to_database(argv[1], argv[2])
