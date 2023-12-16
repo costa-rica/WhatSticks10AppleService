@@ -178,7 +178,8 @@ def create_dashboard_table_object_json_file(user_id):
         logger_apple.info(f"- calculated correlation: {corr_sleep_steps_value}; below is non-string value: -")
         logger_apple.info(corr_sleep_steps_value)
         indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
-       
+    
+    dashboard_table_object['arryIndepVarObjects']=[indep_var_object]
     # new file name:
     # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
     user_sleep_dash_json_file_name = f"dt_sleep01_{int(user_id):04}.json"
