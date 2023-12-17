@@ -271,6 +271,6 @@ def create_data_source_object_json_file(user_id):
 
 # Adjust the argument handling
 if len(argv) > 5:
-    what_sticks_health_service(sys.argv[1], argv[2], argv[3], argv[4], argv[5])
+    what_sticks_health_service(argv[1], argv[2], argv[3], argv[4], argv[5])
 else:
-    what_sticks_health_service(sys.argv[1], argv[2], argv[3], argv[4])
+    what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])
