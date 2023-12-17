@@ -41,22 +41,42 @@ stream_handler.setFormatter(formatter_terminal)
 logger_apple.addHandler(file_handler)
 logger_apple.addHandler(stream_handler)
 
-def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool):
+######################
+# Main WSAS function #
+# argv[1] = user_id
+# argv[2] = apple_json_data_filename
+# argv[3]
+# argv[4]
+# argv[5] = count_of_records_added_to_db
+######################
+def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool, count_of_records_added_to_db = 0):
 
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
-    logger_apple.info(f"- user_id: {user_id} -")
-    logger_apple.info(f"- apple_json_data_filename: {apple_json_data_filename} -")
-    logger_apple.info(f"- add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
+    # logger_apple.info(f"- user_id: {user_id} -")
+    # logger_apple.info(f"- apple_json_data_filename: {apple_json_data_filename} -")
+    # logger_apple.info(f"- add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
     add_data_bool = add_data_bool == 'True'
-    logger_apple.info(f"- [Converted to Bool] add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
-    logger_apple.info(f"- dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
+    # logger_apple.info(f"- [Converted to Bool] add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
+    # logger_apple.info(f"- dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
     dashboard_bool = dashboard_bool == 'True'
-    logger_apple.info(f"- [Converted to Bool] dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
+    # logger_apple.info(f"- [Converted to Bool] dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
 
+    # put user data into a dataframe
+    # user's existing data in pickle dataframe
+    user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
+    pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
+    # if df pickle file exists use pickle file instead of searching db
+    if os.path.exists(pickle_data_path_and_name):
+        logger_apple.info(f"- reading pickle file: {pickle_data_path_and_name} -")
+        df_existing_user_data=pd.read_pickle(pickle_data_path_and_name)
+    else:
+        logger_apple.info(f"- NO pickle file found in: {pickle_data_path_and_name} -")
+        logger_apple.info(f"- reading from WSDB -")
+        df_existing_user_data = get_existing_user_data(user_id)
 
-    count_of_records_added_to_db = 0
+    
     if add_data_bool:
-        count_of_records_added_to_db = add_apple_health_to_database(user_id, apple_json_data_filename)
+        count_of_records_added_to_db = add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_user_data, pickle_data_path_and_name)
 
     if dashboard_bool:
         create_dashboard_table_object_json_file(user_id)
@@ -64,14 +84,24 @@ def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool,
     # notify user
     if count_of_records_added_to_db > 0:
         call_api_notify_completion(user_id,count_of_records_added_to_db)
+        create_data_source_object_json_file(user_id)
 
-    
 
-def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bool=False):
+def add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_user_data, pickle_data_path_and_name, check_all_bool=False):
     logger_apple.info(f"- accessed add_apple_health_to_database for user_id: {user_id} -")
     user_id = int(user_id)
 
-    df_existing_user_data = get_existing_user_data(user_id)
+    # # user's existing data in pickle dataframe
+    # user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
+    # pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
+    # # if df pickle file exists use pickle file instead of searching db
+    # if os.path.exists(pickle_data_path_and_name):
+    #     logger_apple.info(f"- reading pickle file: {pickle_data_path_and_name} -")
+    #     df_existing_user_data=pd.read_pickle(pickle_data_path_and_name)
+    # else:
+    #     logger_apple.info(f"- NO pickle file found in: {pickle_data_path_and_name} -")
+    #     logger_apple.info(f"- reading from WSDB -")
+    #     df_existing_user_data = get_existing_user_data(user_id)
 
     logger_apple.info(f"- df_existing_user_data count : {len(df_existing_user_data)} -")
     logger_apple.info(f"- {df_existing_user_data.head(1)} -")
@@ -123,10 +153,23 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, check_all_bo
 
     count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_kit', con=engine, if_exists='append', index=False)
 
+    # Concatenate the DataFrames
+    df_updated_user_apple_health = pd.concat([df_existing_user_data, df_unique_new_user_data], ignore_index=True)
+
+    # Save the combined DataFrame as a pickle file
+    # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
+    # user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
+
+    # pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
+    logger_apple.info(f"Writing file name: {pickle_data_path_and_name}")
+    df_updated_user_apple_health.to_pickle(pickle_data_path_and_name)
+
     logger_apple.info(f"- count_of_records_added_to_db: {count_of_records_added_to_db} -")
-    count_of_user_apple_health_records = sess.query(AppleHealthKit).filter_by(user_id=user_id).count()
+    # count_of_user_apple_health_records = sess.query(AppleHealthKit).filter_by(user_id=user_id).count()
+    count_of_user_apple_health_records = len(df_updated_user_apple_health)
     logger_apple.info(f"- count of records in db: {count_of_user_apple_health_records}")
     logger_apple.info(f"--- add_apple_health_to_database COMPLETE ---")
+
     
     return count_of_records_added_to_db
     # # If new records found and added to database create 
@@ -192,6 +235,42 @@ def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS COMPLETED dashboard file for user: {user_id} -")
     logger_apple.info(f"- WSAS COMPLETED dashboard file path: {json_data_path_and_name} -")
 
+# File used in Login
+def create_data_source_object_json_file(user_id):
+    logger_apple.info(f"- WSAS creating data source object file for user: {user_id} -")
 
-# add_apple_health_to_database(argv[1], argv[2])
-what_sticks_health_service(argv[1],argv[2],argv[3],argv[4])
+    list_data_source_objects = []
+
+    #get user's oura record count
+    # keys to data_source_object_oura must match WSiOS DataSourceObject
+    data_source_object_oura={}
+    data_source_object_oura['name']="Oura Ring"
+    record_count_oura = sess.query(OuraSleepDescriptions).filter_by(user_id=current_user.id).all()
+    data_source_object_oura['recordCount']="{:,}".format(len(record_count_oura))
+    list_data_source_objects.append(data_source_object_oura)
+
+    #get user's apple health record count
+    # keys to data_source_object_apple_health must match WSiOS DataSourceObject
+    data_source_object_apple_health={}
+    data_source_object_apple_health['name']="Apple Health Data"
+    # record_count_apple_health = sess.query(AppleHealthKit).filter_by(user_id=current_user.id).all()
+    
+    user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
+    pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
+    df_apple_health = pd.read_pickle(pickle_data_path_and_name)
+    data_source_object_apple_health['recordCount']="{:,}".format(len(df_apple_health))
+    list_data_source_objects.append(data_source_object_apple_health)
+
+    # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
+    user_data_source_json_file_name = f"data_source_list_for_user_{int(user_id):04}.json"
+
+    json_data_path_and_name = os.path.join(config.DATA_SOURCE_FILES_DIR, user_data_source_json_file_name)
+    logger_apple.info(f"Writing file name: {json_data_path_and_name}")
+    with open(json_data_path_and_name, 'w') as file:
+        json.dump(list_data_source_objects, file)
+
+# Adjust the argument handling
+if len(sys.argv) > 5:
+    what_sticks_health_service(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+else:
+    what_sticks_health_service(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
