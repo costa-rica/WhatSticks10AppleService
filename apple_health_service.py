@@ -211,6 +211,7 @@ def create_dashboard_table_object_json_file(user_id):
     # keys to dashboard_table_object must match WSiOS DashboardTableObject
     dashboard_table_object = {}
     dashboard_table_object['name']="Sleep Time"
+    dashboard_table_object['sourceDataOfDepVar']="Apple Health Data"
 
     # keys to indep_var_object must match WSiOS IndepVarObject
     indep_var_object = {}
