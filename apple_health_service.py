@@ -75,6 +75,7 @@ def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool,
         logger_apple.info(f"- reading from WSDB -")
         df_existing_user_data = get_existing_user_data(user_id)
 
+    # At this point there still might be no data in WSDB
     
     if add_data_bool:
         count_of_records_added_to_db = add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_user_data, pickle_data_path_and_name)
@@ -189,6 +190,7 @@ def get_existing_user_data(user_id):
         """
         # Execute the query and create a DataFrame
         df_existing_user_data = pd.read_sql_query(query, engine, params={'user_id': user_id})
+        logger_apple.info(f"- successfully created df from WSDB -")
         return df_existing_user_data
     except SQLAlchemyError as e:
         logger_apple.info(f"An error occurred: {e}")
@@ -221,15 +223,15 @@ def create_dashboard_table_object_json_file(user_id):
     # indep_var_object['depVarName'] = "Step Count"
     # main original method
     # corr_sleep_steps_value = corr_sleep_steps(user_id = user_id)
-    list_of_correlations_dict = user_correlations(user_id = user_id)# new
-    for correlation_dict in list_of_correlations_dict:
-        if correlation_dict.get('correlationValue') != "insufficient data":
-            logger_apple.info(f"- {correlation_dict.get('depVarName')} correlation with sleep: {correlation_value} -")
+    list_of_arryIndepVarObjects_dict = user_correlations(user_id = user_id)# new
+    for arryIndepVarObjects_dict in list_of_arryIndepVarObjects_dict:
+        if arryIndepVarObjects_dict.get('correlationValue') != "insufficient data":
+            logger_apple.info(f"- {arryIndepVarObjects_dict.get('depVarName')} correlation with sleep: {correlation_value} -")
             # logger_apple.info(corr_sleep_steps_value)
             # indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
 
     
-            dashboard_table_object['arryIndepVarObjects'].append(correlation_dict)
+            dashboard_table_object['arryIndepVarObjects'].append(arryIndepVarObjects_dict)
     # new file name:
     # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
     user_sleep_dash_json_file_name = f"dt_sleep01_{int(user_id):04}.json"
