@@ -226,7 +226,7 @@ def create_dashboard_table_object_json_file(user_id):
     list_of_arryIndepVarObjects_dict = user_correlations(user_id = user_id)# new
     for arryIndepVarObjects_dict in list_of_arryIndepVarObjects_dict:
         if arryIndepVarObjects_dict.get('correlationValue') != "insufficient data":
-            logger_apple.info(f"- {arryIndepVarObjects_dict.get('depVarName')} correlation with sleep: {correlation_value} -")
+            logger_apple.info(f"- {arryIndepVarObjects_dict.get('depVarName')} correlation with sleep: {arryIndepVarObjects_dict.get('correlationValue')} -")
             # logger_apple.info(corr_sleep_steps_value)
             # indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
 
