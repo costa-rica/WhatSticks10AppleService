@@ -9,7 +9,8 @@ from logging.handlers import RotatingFileHandler
 from sys import argv
 import pandas as pd
 import requests
-from ws_analysis import corr_sleep_steps
+# from ws_analysis import corr_sleep_steps
+from ws_analysis import user_correlations
 
 match os.environ.get('FLASK_CONFIG_TYPE'):
     case 'dev':
@@ -212,18 +213,23 @@ def create_dashboard_table_object_json_file(user_id):
     dashboard_table_object = {}
     dashboard_table_object['name']="Sleep Time"
     dashboard_table_object['sourceDataOfDepVar']="Apple Health Data"
+    dashboard_table_object['arryIndepVarObjects']=[]
 
-    # keys to indep_var_object must match WSiOS IndepVarObject
-    indep_var_object = {}
-    indep_var_object['name'] = "Step Count"
-    indep_var_object['depVarName'] = "Step Count"
-    corr_sleep_steps_value = corr_sleep_steps(user_id = user_id)
-    if corr_sleep_steps_value != "insufficient data":
-        logger_apple.info(f"- calculated correlation: {corr_sleep_steps_value}; below is non-string value: -")
-        logger_apple.info(corr_sleep_steps_value)
-        indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
+    # # keys to indep_var_object must match WSiOS IndepVarObject
+    # indep_var_object = {}
+    # indep_var_object['name'] = "Step Count"
+    # indep_var_object['depVarName'] = "Step Count"
+    # main original method
+    # corr_sleep_steps_value = corr_sleep_steps(user_id = user_id)
+    list_of_correlations_dict = user_correlations(user_id = user_id)# new
+    for correlation_dict in list_of_correlations_dict:
+        if correlation_dict.get('correlationValue') != "insufficient data":
+            logger_apple.info(f"- {correlation_dict.get('depVarName')} correlation with sleep: {correlation_value} -")
+            # logger_apple.info(corr_sleep_steps_value)
+            # indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
+
     
-    dashboard_table_object['arryIndepVarObjects']=[indep_var_object]
+            dashboard_table_object['arryIndepVarObjects'].append(correlation_dict)
     # new file name:
     # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
     user_sleep_dash_json_file_name = f"dt_sleep01_{int(user_id):04}.json"
