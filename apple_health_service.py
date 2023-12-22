@@ -218,20 +218,22 @@ def create_dashboard_table_object_json_file(user_id):
     dashboard_table_object['arryIndepVarObjects']=[]
 
     # # keys to indep_var_object must match WSiOS IndepVarObject
-    # indep_var_object = {}
-    # indep_var_object['name'] = "Step Count"
-    # indep_var_object['depVarName'] = "Step Count"
-    # main original method
-    # corr_sleep_steps_value = corr_sleep_steps(user_id = user_id)
-    list_of_arryIndepVarObjects_dict = user_correlations(user_id = user_id)# new
-    for arryIndepVarObjects_dict in list_of_arryIndepVarObjects_dict:
-        if arryIndepVarObjects_dict.get('correlationValue') != "insufficient data":
-            logger_apple.info(f"- {arryIndepVarObjects_dict.get('depVarName')} correlation with sleep: {arryIndepVarObjects_dict.get('correlationValue')} -")
-            # logger_apple.info(corr_sleep_steps_value)
-            # indep_var_object['correlationValue'] = f"{corr_sleep_steps_value}"
+    list_of_dictIndepVarObjects = user_correlations(user_id = user_id)# new
+    arry_indep_var_objects = []
+    # for arryIndepVarObjects_dict in list_of_arryIndepVarObjects_dict:
+    for dictIndepVarObjects in list_of_dictIndepVarObjects:
+        if dictIndepVarObjects.get('correlationValue') != "insufficient data":
+            logger_apple.info(f"- {dictIndepVarObjects.get('name')} (indep var) correlation with {dictIndepVarObjects.get('depVarName')} (dep var): {dictIndepVarObjects.get('correlationValue')} -")
+            arry_indep_var_objects.append(dictIndepVarObjects)
 
-    
-            dashboard_table_object['arryIndepVarObjects'].append(arryIndepVarObjects_dict)
+    # Sorting (biggest to smallest) the list by the absolute value of correlationValue
+    sorted_arry_indep_var_objects = sorted(arry_indep_var_objects, key=lambda x: abs(x['correlationValue']), reverse=True)
+
+    # Converting correlationValue to string without losing precision
+    for item in sorted_arry_indep_var_objects:
+        item['correlationValue'] = str(item['correlationValue'])
+
+    dashboard_table_object['arryIndepVarObjects'] = sorted_arry_indep_var_objects
     # new file name:
     # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
     user_sleep_dash_json_file_name = f"dt_sleep01_{int(user_id):04}.json"
@@ -278,8 +280,9 @@ def create_data_source_object_json_file(user_id):
     with open(json_data_path_and_name, 'w') as file:
         json.dump(list_data_source_objects, file)
 
-# Adjust the argument handling
-if len(argv) > 5:
-    what_sticks_health_service(argv[1], argv[2], argv[3], argv[4], argv[5])
-else:
-    what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])
+if os.environ.get('FLASK_CONFIG_TYPE') != 'local':
+    # Adjust the argument handling
+    if len(argv) > 5:
+        what_sticks_health_service(argv[1], argv[2], argv[3], argv[4], argv[5])
+    else:
+        what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])
