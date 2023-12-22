@@ -232,6 +232,7 @@ def create_dashboard_table_object_json_file(user_id):
     # Converting correlationValue to string without losing precision
     for item in sorted_arry_indep_var_objects:
         item['correlationValue'] = str(item['correlationValue'])
+        item['observationCount'] = str(item['observationCount'])
 
     dashboard_table_object['arryIndepVarObjects'] = sorted_arry_indep_var_objects
     # new file name:
