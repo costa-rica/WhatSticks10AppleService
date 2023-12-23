@@ -11,6 +11,8 @@ import pandas as pd
 import requests
 # from ws_analysis import corr_sleep_steps
 from ws_analysis import user_correlations
+from .dependent_variables_dict import sleep_time
+from .independent_variables_dict import user_correlations
 
 match os.environ.get('FLASK_CONFIG_TYPE'):
     case 'dev':
@@ -212,10 +214,11 @@ def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS creating dashboard file for user: {user_id} -")
     
     # keys to dashboard_table_object must match WSiOS DashboardTableObject
-    dashboard_table_object = {}
-    dashboard_table_object['name']="Sleep Time"
-    dashboard_table_object['sourceDataOfDepVar']="Apple Health Data"
-    dashboard_table_object['arryIndepVarObjects']=[]
+    # dashboard_table_object = {}
+    # dashboard_table_object['name']="Sleep Time"
+    # dashboard_table_object['sourceDataOfDepVar']="Apple Health Data"
+    # dashboard_table_object['arryIndepVarObjects']=[]
+    dashboard_table_object = sleep_time()
 
     # # keys to indep_var_object must match WSiOS IndepVarObject
     list_of_dictIndepVarObjects = user_correlations(user_id = user_id)# new
