@@ -187,7 +187,7 @@ def get_existing_user_data(user_id):
         # Define the query using a parameterized statement for safety
         query = """
         SELECT * 
-        FROM apple_health_kit 
+        FROM apple_health_quantity_category 
         WHERE user_id = :user_id;
         """
         # Execute the query and create a DataFrame
