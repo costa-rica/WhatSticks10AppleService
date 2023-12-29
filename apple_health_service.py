@@ -1,6 +1,6 @@
 import os
 import json
-from ws_models import sess, engine, OuraSleepDescriptions, AppleHealthKit
+from ws_models import sess, engine, OuraSleepDescriptions, AppleHealthQuantityCategory
 from ws_config import ConfigLocal, ConfigDev, ConfigProd
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
@@ -169,7 +169,7 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_
     df_updated_user_apple_health.to_pickle(pickle_data_path_and_name)
 
     logger_apple.info(f"- count_of_records_added_to_db: {count_of_records_added_to_db} -")
-    # count_of_user_apple_health_records = sess.query(AppleHealthKit).filter_by(user_id=user_id).count()
+    # count_of_user_apple_health_records = sess.query(AppleHealthQuantityCategory).filter_by(user_id=user_id).count()
     count_of_user_apple_health_records = len(df_updated_user_apple_health)
     logger_apple.info(f"- count of records in db: {count_of_user_apple_health_records}")
     logger_apple.info(f"--- add_apple_health_to_database COMPLETE ---")
@@ -268,7 +268,7 @@ def create_data_source_object_json_file(user_id):
     # keys to data_source_object_apple_health must match WSiOS DataSourceObject
     data_source_object_apple_health={}
     data_source_object_apple_health['name']="Apple Health Data"
-    # record_count_apple_health = sess.query(AppleHealthKit).filter_by(user_id=current_user.id).all()
+    # record_count_apple_health = sess.query(AppleHealthQuantityCategory).filter_by(user_id=current_user.id).all()
     
     user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
     pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
