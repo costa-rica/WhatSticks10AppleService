@@ -55,6 +55,8 @@ logger_apple.addHandler(stream_handler)
 def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool, count_of_records_added_to_db = 0):
 
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
+    logger_apple.info(f"- ******************************************* -")
+    logger_apple.info(f"- apple_json_data_filename :::: {apple_json_data_filename} -")
 
     add_data_bool = add_data_bool == 'True'
     dashboard_bool = dashboard_bool == 'True'
