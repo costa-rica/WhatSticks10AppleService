@@ -140,8 +140,12 @@ def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_u
 
     # Fill missing values in 'time_stamp_utc' with the current UTC datetime
     default_date = datetime.utcnow()
-    df_unique_new_user_data['time_stamp_utc'] = df_unique_new_user_data['time_stamp_utc'].fillna(default_date)
-
+    try:
+        # Try to fill missing values in 'time_stamp_utc'
+        df_unique_new_user_data['time_stamp_utc'] = df_unique_new_user_data['time_stamp_utc'].fillna(default_date)
+    except KeyError:
+        # If the column doesn't exist, create it and set all values to default_date
+        df_unique_new_user_data['time_stamp_utc'] = default_date
 
     rename_dict = {}
     rename_dict['duration_x']='duration'
