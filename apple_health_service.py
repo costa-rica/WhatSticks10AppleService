@@ -48,39 +48,57 @@ logger_apple.addHandler(stream_handler)
 # Main WSAS function #
 # argv[1] = user_id
 # argv[2] = apple_json_data_filename
-# argv[3]
-# argv[4]
+# argv[3] = boolean add data?
+# argv[4] = bool make dashboard .json file
 # argv[5] = count_of_records_added_to_db
 ######################
 def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool, count_of_records_added_to_db = 0):
 
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
-    # logger_apple.info(f"- user_id: {user_id} -")
-    # logger_apple.info(f"- apple_json_data_filename: {apple_json_data_filename} -")
-    # logger_apple.info(f"- add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
+
     add_data_bool = add_data_bool == 'True'
-    # logger_apple.info(f"- [Converted to Bool] add_data_bool: {add_data_bool}; type: {type(add_data_bool)} -")
-    # logger_apple.info(f"- dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
     dashboard_bool = dashboard_bool == 'True'
-    # logger_apple.info(f"- [Converted to Bool] dashboard_bool: {dashboard_bool}; type: {type(dashboard_bool)} -")
+    
+    user_datetimestamp_filename_ending = apple_json_data_filename.split("AppleHealthQuantityCategory-")
 
     # put user data into a dataframe
     # user's existing data in pickle dataframe
     user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
+    user_apple_workouts_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_workouts_dataframe.pkl"
     pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
-    # if df pickle file exists use pickle file instead of searching db
+    pickle_apple_workouts_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_workouts_dataframe_pickle_file_name)
+
+    # create apple workouts filename
+    apple_workouts_filename = "AppleWorkouts-" + user_datetimestamp_filename_ending
+
+
+    # if Existing Apple Health (Quantity or Category Type) df pickle file exists use pickle file instead of searching db
     if os.path.exists(pickle_data_path_and_name):
         logger_apple.info(f"- reading pickle file: {pickle_data_path_and_name} -")
         df_existing_user_data=pd.read_pickle(pickle_data_path_and_name)
     else:
-        logger_apple.info(f"- NO pickle file found in: {pickle_data_path_and_name} -")
+        logger_apple.info(f"- NO Apple Health (Quantity or Category Type) pickle file found in: {pickle_data_path_and_name} -")
         logger_apple.info(f"- reading from WSDB -")
         df_existing_user_data = get_existing_user_data(user_id)
 
-    # At this point there still might be no data in WSDB
+    # if Existing Apple Health WORKOUTS exist
+    if os.path.exists(pickle_apple_workouts_data_path_and_name):
+        logger_apple.info(f"- reading pickle file for workouts: {pickle_apple_workouts_data_path_and_name} -")
+        df_existing_user_workouts_data=pd.read_pickle(pickle_apple_workouts_data_path_and_name)
+    else:
+        logger_apple.info(f"- NO Apple Health Workouts pickle file found in: {pickle_apple_workouts_data_path_and_name} -")
+        logger_apple.info(f"- reading from WSDB -")
+        df_existing_user_workouts_data = get_existing_user_apple_workouts_data(user_id)   
     
+    # At this point there still might be no data in WSDB    
     if add_data_bool:
-        count_of_records_added_to_db = add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_user_data, pickle_data_path_and_name)
+        # add apple health quantity and category
+        count_of_records_added_to_db = add_apple_health_to_database(user_id, apple_json_data_filename, 
+                                            df_existing_user_data, pickle_data_path_and_name)
+
+        # add apple health workouts
+        count_of_apple_workout_records_to_db = add_apple_workouts_to_database(user_id,apple_workouts_filename,
+                                            df_existing_user_workouts_data,pickle_apple_workouts_data_path_and_name)
 
     if dashboard_bool:
         create_dashboard_table_object_json_file(user_id)
@@ -89,6 +107,38 @@ def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool,
     if count_of_records_added_to_db > 0:
         call_api_notify_completion(user_id,count_of_records_added_to_db)
         create_data_source_object_json_file(user_id)
+
+
+def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_user_workouts_data,pickle_apple_workouts_data_path_and_name):
+    
+    #create new apple_workout df
+    with open(os.path.join(config.APPLE_HEALTH_DIR, apple_workouts_filename), 'r') as new_user_data_path_and_filename:
+        # apple_json_data = json.load(new_user_data_path_and_filename)
+        df_new_user_workout_data = pd.read_json(new_user_data_path_and_filename)
+
+
+    # check if user workout .pckl file exists
+    ## if exists:
+    ### create df_existing - via read pickle file
+    ### compare existing data with new data and create
+    ##### - criteria user_id, sampleType, UUID
+    ### get unique records
+    ### append unique to existing df
+    ### add unique records to database
+
+    ## if no pickle exists:
+    ### create pickle file  "user_0001_apple_health_dataframe.pkl"
+    df_new_user_workout_data.to_pickle(pickle_apple_workouts_data_path_and_name)
+
+    ### add df to database
+    count_of_records_added_to_db = df_new_user_workout_data.to_sql('apple_health_workout', con=engine, if_exists='append', index=False)
+    
+    count_of_user_apple_health_records = len(df_new_user_workout_data)
+    logger_apple.info(f"- count of Apple Health Workout records in db: {count_of_user_apple_health_records}")
+    logger_apple.info(f"--- add_apple_workouts_to_database COMPLETE ---")
+
+    
+    return count_of_records_added_to_db
 
 
 def add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_user_data, pickle_data_path_and_name, check_all_bool=False):
@@ -155,7 +205,8 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_
     rename_dict['quantity_x']='quantity'
     df_unique_new_user_data.rename(columns=rename_dict, inplace=True)
 
-    count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_kit', con=engine, if_exists='append', index=False)
+    # count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_kit', con=engine, if_exists='append', index=False)
+    count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_quantity_category', con=engine, if_exists='append', index=False)
 
     # Concatenate the DataFrames
     df_updated_user_apple_health = pd.concat([df_existing_user_data, df_unique_new_user_data], ignore_index=True)
@@ -198,6 +249,22 @@ def get_existing_user_data(user_id):
         logger_apple.info(f"An error occurred: {e}")
         return None
 
+def get_existing_user_apple_workouts_data(user_id):
+    try:
+        # Define the query using a parameterized statement for safety
+        query = """
+        SELECT * 
+        FROM apple_health_workout 
+        WHERE user_id = :user_id;
+        """
+        # Execute the query and create a DataFrame
+        df_existing_user_apple_workouts_data = pd.read_sql_query(query, engine, params={'user_id': user_id})
+        logger_apple.info(f"- successfully created df from WSDB -")
+        return df_existing_user_data
+    except SQLAlchemyError as e:
+        logger_apple.info(f"An error occurred: {e}")
+        return None
+
 def call_api_notify_completion(user_id,count_of_records_added_to_db):
     logger_apple.info(f"- WSAS sending WSAPI call to send email notification to user: {user_id} -")
     headers = { 'Content-Type': 'application/json'}
@@ -214,10 +281,6 @@ def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS creating dashboard file for user: {user_id} -")
     
     # keys to dashboard_table_object must match WSiOS DashboardTableObject
-    # dashboard_table_object = {}
-    # dashboard_table_object['name']="Sleep Time"
-    # dashboard_table_object['sourceDataOfDepVar']="Apple Health Data"
-    # dashboard_table_object['arryIndepVarObjects']=[]
     dashboard_table_object = sleep_time()
 
     # # keys to indep_var_object must match WSiOS IndepVarObject
@@ -283,6 +346,13 @@ def create_data_source_object_json_file(user_id):
     logger_apple.info(f"Writing file name: {json_data_path_and_name}")
     with open(json_data_path_and_name, 'w') as file:
         json.dump(list_data_source_objects, file)
+
+
+
+
+
+
+
 
 if os.environ.get('FLASK_CONFIG_TYPE') != 'local':
     # Adjust the argument handling
