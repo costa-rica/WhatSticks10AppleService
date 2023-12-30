@@ -72,6 +72,7 @@ def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool,
 
     # create apple workouts filename
     apple_workouts_filename = "AppleWorkouts-" + user_datetimestamp_filename_ending
+    logger_apple.info(f"- apple_workouts_filename :::: {apple_workouts_filename} -")
 
 
     # if Existing Apple Health (Quantity or Category Type) df pickle file exists use pickle file instead of searching db
