@@ -260,7 +260,7 @@ def get_existing_user_apple_workouts_data(user_id):
         # Execute the query and create a DataFrame
         df_existing_user_apple_workouts_data = pd.read_sql_query(query, engine, params={'user_id': user_id})
         logger_apple.info(f"- successfully created df from WSDB -")
-        return df_existing_user_data
+        return df_existing_user_apple_workouts_data
     except SQLAlchemyError as e:
         logger_apple.info(f"An error occurred: {e}")
         return None
