@@ -61,7 +61,7 @@ def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool,
     add_data_bool = add_data_bool == 'True'
     dashboard_bool = dashboard_bool == 'True'
     
-    user_datetimestamp_filename_ending = apple_json_data_filename.split("AppleHealthQuantityCategory-")[0]
+    user_datetimestamp_filename_ending = apple_json_data_filename.split("AppleHealthQuantityCategory-")[1]
 
     # put user data into a dataframe
     # user's existing data in pickle dataframe
