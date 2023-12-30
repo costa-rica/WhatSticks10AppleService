@@ -119,6 +119,9 @@ def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_u
         # apple_json_data = json.load(new_user_data_path_and_filename)
         df_new_user_workout_data = pd.read_json(new_user_data_path_and_filename)
 
+    # Fill missing values in 'time_stamp_utc' with the current UTC datetime
+    default_date = datetime.utcnow()
+    df_new_user_workout_data['time_stamp_utc'] = df_new_user_workout_data['time_stamp_utc'].fillna(default_date)
 
     # check if user workout .pckl file exists
     ## if exists:
