@@ -9,8 +9,6 @@ from logging.handlers import RotatingFileHandler
 from sys import argv
 import pandas as pd
 import requests
-# from ws_analysis import corr_sleep_steps
-# from ws_analysis import user_correlations
 from dependent_variables_dict import sleep_time
 from independent_variables_dict import user_correlations
 
@@ -119,31 +117,52 @@ def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_u
         # apple_json_data = json.load(new_user_data_path_and_filename)
         df_new_user_workout_data = pd.read_json(new_user_data_path_and_filename)
 
+    # Perform the merge on specific columns
+    df_merged = pd.merge(df_new_user_workout_data, df_existing_user_workouts_data, 
+                        on=['sampleType', 'startDate', 'endDate', 'UUID'], 
+                        how='outer', indicator=True)
+    # Filter out the rows that are only in df_new_user_workout_data
+    df_unique_new_user_data = df_merged[df_merged['_merge'] == 'left_only']
+    # Drop columns ending with '_y'
+    df_unique_new_user_data = df_unique_new_user_data[df_unique_new_user_data.columns.drop(list(df_unique_new_user_data.filter(regex='_y')))]
+    # Filter out the rows that are duplicates (in both dataframes)
+    df_duplicates = df_merged[df_merged['_merge'] == 'both']
+    # Drop the merge indicator column from both dataframes
+    df_unique_new_user_data = df_unique_new_user_data.drop(columns=['_merge'])
+    df_duplicates = df_duplicates.drop(columns=['_merge'])
+    df_unique_new_user_data['user_id'] = user_id
+    # Convert 'user_id' from float to integer and then to string
+    df_unique_new_user_data['user_id'] = df_unique_new_user_data['user_id'].astype(int)
+    # # Drop the 'metadataAppleHealth' and 'time_stamp_utc' columns
+    # df_unique_new_user_data = df_unique_new_user_data.drop(columns=['metadataAppleHealth'])
+    # Fill missing values in 'time_stamp_utc' with the current UTC datetime
+
+
     # Fill missing values in 'time_stamp_utc' with the current UTC datetime
     default_date = datetime.utcnow()
-    df_new_user_workout_data['time_stamp_utc'] = df_new_user_workout_data['time_stamp_utc'].fillna(default_date)
+    df_unique_new_user_data['time_stamp_utc'] = df_unique_new_user_data['time_stamp_utc'].fillna(default_date)
 
-    # check if user workout .pckl file exists
-    ## if exists:
-    ### create df_existing - via read pickle file
-    ### compare existing data with new data and create
-    ##### - criteria user_id, sampleType, UUID
-    ### get unique records
-    ### append unique to existing df
-    ### add unique records to database
 
-    ## if no pickle exists:
+    rename_dict = {}
+    rename_dict['duration_x']='duration'
+    rename_dict['sourceName_x']='sourceName'
+    rename_dict['totalDistance_x']='totalDistance'
+    rename_dict['device_x']='device'
+    rename_dict['totalEnergyBurned_x']='totalEnergyBurned'
+    rename_dict['sourceVersion_x']='sourceVersion'
+    # rename_dict['quantity_x']='quantity'
+    df_unique_new_user_data.rename(columns=rename_dict, inplace=True)
+
     ### create pickle file  "user_0001_apple_health_dataframe.pkl"
-    df_new_user_workout_data.to_pickle(pickle_apple_workouts_data_path_and_name)
+    df_unique_new_user_data.to_pickle(pickle_apple_workouts_data_path_and_name)
 
     ### add df to database
-    count_of_records_added_to_db = df_new_user_workout_data.to_sql('apple_health_workout', con=engine, if_exists='append', index=False)
+    count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_workout', con=engine, if_exists='append', index=False)
     
     count_of_user_apple_health_records = len(df_new_user_workout_data)
     logger_apple.info(f"- count of Apple Health Workout records in db: {count_of_user_apple_health_records}")
     logger_apple.info(f"--- add_apple_workouts_to_database COMPLETE ---")
 
-    
     return count_of_records_added_to_db
 
 
@@ -151,30 +170,18 @@ def add_apple_health_to_database(user_id, apple_json_data_filename, df_existing_
     logger_apple.info(f"- accessed add_apple_health_to_database for user_id: {user_id} -")
     user_id = int(user_id)
 
-    # # user's existing data in pickle dataframe
-    # user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
-    # pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
-    # # if df pickle file exists use pickle file instead of searching db
-    # if os.path.exists(pickle_data_path_and_name):
-    #     logger_apple.info(f"- reading pickle file: {pickle_data_path_and_name} -")
-    #     df_existing_user_data=pd.read_pickle(pickle_data_path_and_name)
-    # else:
-    #     logger_apple.info(f"- NO pickle file found in: {pickle_data_path_and_name} -")
-    #     logger_apple.info(f"- reading from WSDB -")
-    #     df_existing_user_data = get_existing_user_data(user_id)
-
-    logger_apple.info(f"- df_existing_user_data count : {len(df_existing_user_data)} -")
-    logger_apple.info(f"- {df_existing_user_data.head(1)} -")
-    logger_apple.info(f"- ------------------- -")
+    # logger_apple.info(f"- df_existing_user_data count : {len(df_existing_user_data)} -")
+    # logger_apple.info(f"- {df_existing_user_data.head(1)} -")
+    # logger_apple.info(f"- ------------------- -")
 
     # ws_data_folder ="/Users/nick/Documents/_testData/_What_Sticks"
     with open(os.path.join(config.APPLE_HEALTH_DIR, apple_json_data_filename), 'r') as new_user_data_path_and_filename:
         # apple_json_data = json.load(new_user_data_path_and_filename)
         df_new_user_data = pd.read_json(new_user_data_path_and_filename)
 
-    logger_apple.info(f"- df_new_user_data count : {len(df_new_user_data)} -")
-    logger_apple.info(f"- {df_new_user_data.head(1)} -")
-    logger_apple.info(f"- ------------------- -")
+    # logger_apple.info(f"- df_new_user_data count : {len(df_new_user_data)} -")
+    # logger_apple.info(f"- {df_new_user_data.head(1)} -")
+    # logger_apple.info(f"- ------------------- -")
 
     # Convert the 'value' column in both dataframes to string
     df_new_user_data['value'] = df_new_user_data['value'].astype(str)
