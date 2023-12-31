@@ -112,6 +112,13 @@ def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool,
 
 def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_user_workouts_data,pickle_apple_workouts_data_path_and_name):
     
+    # Convert the 'value' column in both dataframes to string
+    df_new_user_workout_data['sourceVersion'] = df_new_user_workout_data['sourceVersion'].astype(str)
+    df_new_user_workout_data['duration'] = df_new_user_workout_data['duration'].astype(str)
+    df_new_user_workout_data['sampleType'] = df_new_user_workout_data['sampleType'].astype(str)
+    df_new_user_workout_data['totalEnergyBurned'] = df_new_user_workout_data['totalEnergyBurned'].astype(str)
+
+
     #create new apple_workout df
     with open(os.path.join(config.APPLE_HEALTH_DIR, apple_workouts_filename), 'r') as new_user_data_path_and_filename:
         # apple_json_data = json.load(new_user_data_path_and_filename)
