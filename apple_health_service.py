@@ -50,7 +50,8 @@ logger_apple.addHandler(stream_handler)
 # argv[4] = bool make dashboard .json file
 # argv[5] = count_of_records_added_to_db
 ######################
-def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool, count_of_records_added_to_db = 0):
+def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool, 
+                                    count_of_records_added_to_db = 0):
 
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
     logger_apple.info(f"- ******************************************* -")
@@ -174,9 +175,13 @@ def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_u
     ### create pickle file  "user_0001_apple_health_dataframe.pkl"
     df_unique_new_user_data.to_pickle(pickle_apple_workouts_data_path_and_name)
 
-    ### add df to database
-    count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_workout', con=engine, if_exists='append', index=False)
-    
+    try:
+        ### add df to database
+        count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_workout', con=engine, if_exists='append', index=False)
+    except sqlite3.IntegrityError as e:
+        logger_apple.info(f"An integrity error occurred: {e}")
+
+
     count_of_user_apple_health_records = len(df_new_user_workout_data)
     logger_apple.info(f"- count of Apple Health Workout records in db: {count_of_user_apple_health_records}")
     logger_apple.info(f"--- add_apple_workouts_to_database COMPLETE ---")
