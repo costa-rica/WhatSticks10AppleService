@@ -123,6 +123,11 @@ def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_u
     df_new_user_workout_data['sampleType'] = df_new_user_workout_data['sampleType'].astype(str)
     df_new_user_workout_data['totalEnergyBurned'] = df_new_user_workout_data['totalEnergyBurned'].astype(str)
 
+    logger_apple.info(f"- df_new_user_workout_data.dtypes: {df_new_user_workout_data.dtypes}")
+    logger_apple.info(f"- df_existing_user_workouts_data.dtypes: {df_existing_user_workouts_data.dtypes}")
+
+
+
     # Perform the merge on specific columns
     df_merged = pd.merge(df_new_user_workout_data, df_existing_user_workouts_data, 
                         on=['sampleType', 'startDate', 'endDate', 'UUID'], 
