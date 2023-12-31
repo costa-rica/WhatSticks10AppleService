@@ -368,6 +368,7 @@ def create_data_source_object_json_file(user_id):
     pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
     df_apple_health = pd.read_pickle(pickle_data_path_and_name)
     data_source_object_apple_health['recordCount']="{:,}".format(len(df_apple_health))
+    data_source_object_apple_health['recordCount']="{:,}".format(len(df_apple_health))
     list_data_source_objects.append(data_source_object_apple_health)
 
     # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
