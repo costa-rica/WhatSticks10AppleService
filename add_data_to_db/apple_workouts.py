@@ -35,7 +35,7 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
 
     print("- df_existing_user_workouts_data - ")
     print(f"- df_existing_user_workouts_data dtypes: {df_existing_user_workouts_data.dtypes} - ")
-    print(f"- df_existing_user_workouts_data len: {df_existing_user_workouts_data} - ")
+    # print(f"- df_existing_user_workouts_data len: {df_existing_user_workouts_data} - ")
 
     #create new apple_workout df
     with open(os.path.join(config.APPLE_HEALTH_DIR, apple_workouts_filename), 'r') as new_user_data_path_and_filename:
@@ -98,7 +98,7 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
 
     print("--- df_unique_new_user_data ---")
     print(f"dtypes: {df_unique_new_user_data.dtypes}")
-    print(f"{df_unique_new_user_data}")
+    # print(f"{df_unique_new_user_data}")
 
     ### create pickle file  "user_0001_apple_health_dataframe.pkl"
     df_unique_new_user_data.to_pickle(pickle_apple_workouts_data_path_and_name)
