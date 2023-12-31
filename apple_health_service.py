@@ -110,27 +110,29 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
 
 
     # if Existing Apple Health (Quantity or Category Type) df pickle file exists use pickle file instead of searching db
-    if os.path.exists(pickle_apple_qty_cat_path_and_name):
-        logger_apple.info(f"- reading pickle file: {pickle_apple_qty_cat_path_and_name} -")
-        # df_existing_user_data=pd.read_pickle(pickle_apple_qty_cat_path_and_name)
-        df_existing_qty_cat = pd.read_pickle(pickle_apple_qty_cat_path_and_name)
-    else:
-        logger_apple.info(f"- NO Apple Health (Quantity or Category Type) pickle file found in: {pickle_apple_qty_cat_path_and_name} -")
-        logger_apple.info(f"- reading from WSDB -")
-        # df_existing_user_data = get_existing_user_data(user_id)
-        # df_existing_user_data = make_df_existing_user_apple_quantity_category(logger_apple, user_id)
-        df_existing_qty_cat = make_df_existing_user_apple_quantity_category(logger_apple, user_id)
+    df_existing_qty_cat = make_df_existing_user_apple_quantity_category(logger_apple,user_id, pickle_apple_qty_cat_path_and_name)
+    # if os.path.exists(pickle_apple_qty_cat_path_and_name):
+    #     logger_apple.info(f"- reading pickle file: {pickle_apple_qty_cat_path_and_name} -")
+    #     # df_existing_user_data=pd.read_pickle(pickle_apple_qty_cat_path_and_name)
+    #     df_existing_qty_cat = pd.read_pickle(pickle_apple_qty_cat_path_and_name)
+    # else:
+    #     logger_apple.info(f"- NO Apple Health (Quantity or Category Type) pickle file found in: {pickle_apple_qty_cat_path_and_name} -")
+    #     logger_apple.info(f"- reading from WSDB -")
+    #     # df_existing_user_data = get_existing_user_data(user_id)
+    #     # df_existing_user_data = make_df_existing_user_apple_quantity_category(logger_apple, user_id)
+    #     df_existing_qty_cat = make_df_existing_user_apple_quantity_category(logger_apple, user_id)
 
-    # if Existing Apple Health WORKOUTS exist
-    if os.path.exists(pickle_apple_workouts_path_and_name):
-        logger_apple.info(f"- reading pickle file for workouts: {pickle_apple_workouts_path_and_name} -")
-        # df_existing_user_workouts_data=pd.read_pickle(pickle_apple_workouts_path_and_name)
-        df_existing_workouts=pd.read_pickle(pickle_apple_workouts_path_and_name)
-    else:
-        logger_apple.info(f"- NO Apple Health Workouts pickle file found in: {pickle_apple_workouts_path_and_name} -")
-        logger_apple.info(f"- reading from WSDB -")
-        # df_existing_user_workouts_data = make_df_existing_user_apple_workouts(logger_apple, user_id)   
-        df_existing_workouts = make_df_existing_user_apple_workouts(logger_apple, user_id)   
+    # # if Existing Apple Health WORKOUTS exist
+    df_existing_workouts = make_df_existing_user_apple_workouts(logger_apple, user_id,pickle_apple_workouts_path_and_name)
+    # if os.path.exists(pickle_apple_workouts_path_and_name):
+    #     logger_apple.info(f"- reading pickle file for workouts: {pickle_apple_workouts_path_and_name} -")
+    #     # df_existing_user_workouts_data=pd.read_pickle(pickle_apple_workouts_path_and_name)
+    #     df_existing_workouts=pd.read_pickle(pickle_apple_workouts_path_and_name)
+    # else:
+    #     logger_apple.info(f"- NO Apple Health Workouts pickle file found in: {pickle_apple_workouts_path_and_name} -")
+    #     logger_apple.info(f"- reading from WSDB -")
+    #     # df_existing_user_workouts_data = make_df_existing_user_apple_workouts(logger_apple, user_id)   
+    #     df_existing_workouts = make_df_existing_user_apple_workouts(logger_apple, user_id)   
     
     print(f"**** length of existing workouts: {len(df_existing_workouts)}")
 

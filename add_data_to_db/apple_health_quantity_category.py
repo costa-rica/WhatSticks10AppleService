@@ -9,21 +9,31 @@ def test_func_02(logger_obj, test_string):
     logger_obj.info(f"- {test_string} -")
 
 
-def make_df_existing_user_apple_quantity_category(logger_obj,user_id):
-    try:
-        # Define the query using a parameterized statement for safety
-        query = """
-        SELECT * 
-        FROM apple_health_quantity_category 
-        WHERE user_id = :user_id;
-        """
-        # Execute the query and create a DataFrame
-        df_existing_user_data = pd.read_sql_query(query, engine, params={'user_id': user_id})
-        logger_obj.info(f"- successfully created df from WSDB -")
-        return df_existing_user_data
-    except SQLAlchemyError as e:
-        logger_obj.info(f"An error occurred: {e}")
-        return None
+def make_df_existing_user_apple_quantity_category(logger_obj,user_id, pickle_apple_qty_cat_path_and_name):
+
+    if os.path.exists(pickle_apple_qty_cat_path_and_name):
+        logger_obj.info(f"- reading pickle file: {pickle_apple_qty_cat_path_and_name} -")
+        # df_existing_user_data=pd.read_pickle(pickle_apple_qty_cat_path_and_name)
+        df_existing_qty_cat = pd.read_pickle(pickle_apple_qty_cat_path_and_name)
+        return df_existing_qty_cat
+    else:
+        logger_obj.info(f"- NO Apple Health (Quantity or Category Type) pickle file found in: {pickle_apple_qty_cat_path_and_name} -")
+        logger_obj.info(f"- reading from WSDB -")
+
+        try:
+            # Define the query using a parameterized statement for safety
+            query = """
+            SELECT * 
+            FROM apple_health_quantity_category 
+            WHERE user_id = :user_id;
+            """
+            # Execute the query and create a DataFrame
+            df_existing_qty_cat = pd.read_sql_query(query, engine, params={'user_id': user_id})
+            logger_obj.info(f"- successfully created df from WSDB -")
+            return df_existing_qty_cat
+        except SQLAlchemyError as e:
+            logger_obj.info(f"An error occurred: {e}")
+            return None
 
 
 def add_apple_health_to_database(logger_obj, config, user_id, apple_json_data_filename, df_existing_user_data, pickle_data_path_and_name, check_all_bool=False):

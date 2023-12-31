@@ -6,7 +6,15 @@ from datetime import datetime
 import sqlite3 
 
 # def get_existing_user_apple_workouts_data(user_id):
-def make_df_existing_user_apple_workouts(logger_obj, user_id):
+def make_df_existing_user_apple_workouts(logger_obj, user_id,pickle_apple_workouts_path_and_name):
+    # if os.path.exists(pickle_apple_workouts_path_and_name):
+    #     logger_obj.info(f"- reading pickle file for workouts: {pickle_apple_workouts_path_and_name} -")
+    #     # df_existing_user_workouts_data=pd.read_pickle(pickle_apple_workouts_path_and_name)
+    #     df_existing_workouts=pd.read_pickle(pickle_apple_workouts_path_and_name)
+    #     return df_existing_workouts
+    # else:
+    logger_obj.info(f"- NO Apple Health Workouts pickle file found in: {pickle_apple_workouts_path_and_name} -")
+    logger_obj.info(f"- reading from WSDB -")
     try:
         # Define the query using a parameterized statement for safety
         query = """
@@ -15,15 +23,19 @@ def make_df_existing_user_apple_workouts(logger_obj, user_id):
         WHERE user_id = :user_id;
         """
         # Execute the query and create a DataFrame
-        df_existing_user_apple_workouts_data = pd.read_sql_query(query, engine, params={'user_id': user_id})
+        df_existing_workouts = pd.read_sql_query(query, engine, params={'user_id': user_id})
         logger_obj.info(f"- successfully created df from WSDB -")
-        return df_existing_user_apple_workouts_data
+        return df_existing_workouts
     except SQLAlchemyError as e:
         logger_obj.info(f"An error occurred: {e}")
         return None
 
 
 def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_filename,df_existing_user_workouts_data,pickle_apple_workouts_data_path_and_name):
+
+    print("- df_existing_user_workouts_data - ")
+    print(f"- df_existing_user_workouts_data dtypes: {df_existing_user_workouts_data.dtypes} - ")
+    print(f"- df_existing_user_workouts_data len: {df_existing_user_workouts_data} - ")
 
     #create new apple_workout df
     with open(os.path.join(config.APPLE_HEALTH_DIR, apple_workouts_filename), 'r') as new_user_data_path_and_filename:
@@ -83,6 +95,10 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
     rename_dict['sourceVersion_x']='sourceVersion'
     # rename_dict['quantity_x']='quantity'
     df_unique_new_user_data.rename(columns=rename_dict, inplace=True)
+
+    print("--- df_unique_new_user_data ---")
+    print(f"dtypes: {df_unique_new_user_data.dtypes}")
+    print(f"{df_unique_new_user_data}")
 
     ### create pickle file  "user_0001_apple_health_dataframe.pkl"
     df_unique_new_user_data.to_pickle(pickle_apple_workouts_data_path_and_name)
