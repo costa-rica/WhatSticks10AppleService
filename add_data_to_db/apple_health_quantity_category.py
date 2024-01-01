@@ -18,7 +18,7 @@ def make_df_existing_user_apple_quantity_category(logger_obj,user_id, pickle_app
         return df_existing_qty_cat
     else:
         logger_obj.info(f"- NO Apple Health (Quantity or Category Type) pickle file found in: {pickle_apple_qty_cat_path_and_name} -")
-        logger_obj.info(f"- reading from WSDB -")
+        logger_obj.info(f"- reading Apple Health (Quantity and Category Type) from WSDB -")
 
         try:
             # Define the query using a parameterized statement for safety
@@ -30,6 +30,7 @@ def make_df_existing_user_apple_quantity_category(logger_obj,user_id, pickle_app
             # Execute the query and create a DataFrame
             df_existing_qty_cat = pd.read_sql_query(query, engine, params={'user_id': user_id})
             logger_obj.info(f"- successfully created df from WSDB -")
+            logger_obj.info(f"- Successfully created Apple Quantity and Category df from WSDB -")
             return df_existing_qty_cat
         except SQLAlchemyError as e:
             logger_obj.info(f"An error occurred: {e}")

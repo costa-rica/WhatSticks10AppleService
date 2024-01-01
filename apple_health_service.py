@@ -75,67 +75,33 @@ def apple_health_workouts_json_filename(user_id, timestamp_str):
 # argv[4] = bool make dashboard .json file
 # argv[5] = count_of_records_added_to_db
 ######################
-# def what_sticks_health_service(user_id, apple_json_data_filename, add_data_bool, dashboard_bool, 
-                                    # count_of_records_added_to_db = 0):
+
 def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool):
 
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
     logger_apple.info(f"- ******************************************* -")
-    # logger_apple.info(f"- apple_json_data_filename :::: {apple_json_data_filename} -")
+    logger_apple.info(f"-- add_qty_cat_bool: {add_qty_cat_bool} -")
+    logger_apple.info(f"-- add_workouts_bool: {add_workouts_bool} -")
 
-    # add_data_bool = add_data_bool == 'True'
-    # dashboard_bool = dashboard_bool == 'True'
     add_qty_cat_bool = add_qty_cat_bool == 'True'
     add_workouts_bool = add_workouts_bool == 'True'
-    # create_dashboard_obj_bool = create_dashboard_obj_bool == 'True'
-    # create_data_source_obj_bool = create_data_source_obj_bool == 'True'
     
     # filename example: AppleHealthQuantityCategory-user_id1-20231229-1612.json
     apple_health_qty_cat_json_file_name = apple_health_qty_cat_json_filename(user_id, time_stamp_str)
     apple_health_workouts_json_file_name = apple_health_workouts_json_filename(user_id, time_stamp_str)
 
-
-    # put user data into a dataframe
     # user's existing data in pickle dataframe
     user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
     user_apple_workouts_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_workouts_dataframe.pkl"
-    # pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
+
     pickle_apple_qty_cat_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
-    # pickle_apple_workouts_data_path_and_name
     pickle_apple_workouts_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_workouts_dataframe_pickle_file_name)
 
-    # # create apple workouts filename
-    # apple_workouts_filename = "AppleWorkouts-" + user_datetimestamp_filename_ending
-    # logger_apple.info(f"- apple_workouts_filename :::: {apple_workouts_filename} -")
-
-
-    # if Existing Apple Health (Quantity or Category Type) df pickle file exists use pickle file instead of searching db
+    # create EXISTING Apple Health (Quantity or Category Type) df pickle file exists or db
     df_existing_qty_cat = make_df_existing_user_apple_quantity_category(logger_apple,user_id, pickle_apple_qty_cat_path_and_name)
-    # if os.path.exists(pickle_apple_qty_cat_path_and_name):
-    #     logger_apple.info(f"- reading pickle file: {pickle_apple_qty_cat_path_and_name} -")
-    #     # df_existing_user_data=pd.read_pickle(pickle_apple_qty_cat_path_and_name)
-    #     df_existing_qty_cat = pd.read_pickle(pickle_apple_qty_cat_path_and_name)
-    # else:
-    #     logger_apple.info(f"- NO Apple Health (Quantity or Category Type) pickle file found in: {pickle_apple_qty_cat_path_and_name} -")
-    #     logger_apple.info(f"- reading from WSDB -")
-    #     # df_existing_user_data = get_existing_user_data(user_id)
-    #     # df_existing_user_data = make_df_existing_user_apple_quantity_category(logger_apple, user_id)
-    #     df_existing_qty_cat = make_df_existing_user_apple_quantity_category(logger_apple, user_id)
 
-    # # if Existing Apple Health WORKOUTS exist
+    # create EXISTING Apple Health WORKOUTS
     df_existing_workouts = make_df_existing_user_apple_workouts(logger_apple, user_id,pickle_apple_workouts_path_and_name)
-    # if os.path.exists(pickle_apple_workouts_path_and_name):
-    #     logger_apple.info(f"- reading pickle file for workouts: {pickle_apple_workouts_path_and_name} -")
-    #     # df_existing_user_workouts_data=pd.read_pickle(pickle_apple_workouts_path_and_name)
-    #     df_existing_workouts=pd.read_pickle(pickle_apple_workouts_path_and_name)
-    # else:
-    #     logger_apple.info(f"- NO Apple Health Workouts pickle file found in: {pickle_apple_workouts_path_and_name} -")
-    #     logger_apple.info(f"- reading from WSDB -")
-    #     # df_existing_user_workouts_data = make_df_existing_user_apple_workouts(logger_apple, user_id)   
-    #     df_existing_workouts = make_df_existing_user_apple_workouts(logger_apple, user_id)   
-    
-    print(f"**** length of existing workouts: {len(df_existing_workouts)}")
-
 
     count_of_qty_cat_records_added_to_db = 0
     count_of_workout_records_to_db = 0
@@ -144,16 +110,10 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     # if add_data_bool:
     if add_qty_cat_bool:
         logger_apple.info(f"- Adding Apple Health Quantity Category Data -")
-        # add apple health quantity and category
-        # count_of_records_added_to_db = add_apple_health_to_database(logger_apple, user_id, apple_json_data_filename, 
-                                            # df_existing_qty_cat, pickle_apple_qty_cat_path_and_name)
         count_of_qty_cat_records_added_to_db = add_apple_health_to_database(logger_apple, config, user_id, apple_health_qty_cat_json_file_name, 
                                             df_existing_qty_cat, pickle_apple_qty_cat_path_and_name)
     if add_workouts_bool:
         logger_apple.info(f"- Adding Apple Health Workouts Data -")
-        # add apple health workouts
-        # count_of_apple_workout_records_to_db = add_apple_workouts_to_database(logger_apple, user_id,apple_workouts_filename,
-        #                                     df_existing_workouts,pickle_apple_workouts_path_and_name)
         count_of_workout_records_to_db = add_apple_workouts_to_database(logger_apple, config, user_id,apple_health_workouts_json_file_name,
                                             df_existing_workouts,pickle_apple_workouts_path_and_name)
 
@@ -161,7 +121,6 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     if count_of_qty_cat_records_added_to_db > 0 | count_of_workout_records_to_db > 0:
         create_data_source_object_json_file(user_id)
         create_dashboard_table_object_json_file(user_id)
-
         # call_api_notify_completion(user_id,count_of_records_added_to_db)
 
 
