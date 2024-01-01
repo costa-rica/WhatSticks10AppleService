@@ -72,10 +72,9 @@ def apple_health_workouts_json_filename(user_id, timestamp_str):
 ######################
 # Main WSAS function #
 # argv[1] = user_id
-# argv[2] = apple_json_data_filename
-# argv[3] = boolean add data?
-# argv[4] = bool make dashboard .json file
-# argv[5] = count_of_records_added_to_db
+# argv[2] = time stamp string for file name
+# argv[3] = add_qty_cat_bool
+# argv[4] = add_workouts_bool
 ######################
 def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool):
 
