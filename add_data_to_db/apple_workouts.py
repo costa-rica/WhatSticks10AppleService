@@ -53,8 +53,8 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
     df_existing_user_workouts_data['duration'] = df_existing_user_workouts_data['duration'].astype(str)
     df_existing_user_workouts_data['duration'] = df_existing_user_workouts_data['duration'].astype(str)
 
-    logger_obj.info(f"- df_new_user_workout_data.dtypes: {df_new_user_workout_data.dtypes}")
-    logger_obj.info(f"- df_existing_user_workouts_data.dtypes: {df_existing_user_workouts_data.dtypes}")
+    # logger_obj.info(f"- df_new_user_workout_data.dtypes: {df_new_user_workout_data.dtypes}")
+    # logger_obj.info(f"- df_existing_user_workouts_data.dtypes: {df_existing_user_workouts_data.dtypes}")
 
     # Perform the merge on specific columns
     df_merged = pd.merge(df_new_user_workout_data, df_existing_user_workouts_data, 
@@ -112,8 +112,8 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
     df_updated_user_apple_health = pd.concat([df_existing_user_workouts_data, df_unique_new_user_data], ignore_index=True)
 
     ### create pickle file  "user_0001_apple_workouts_dataframe.pkl"
-    df_unique_new_user_data.to_pickle(pickle_apple_workouts_data_path_and_name)
-    print("** right before error **")
+    df_updated_user_apple_health.to_pickle(pickle_apple_workouts_data_path_and_name)
+    logger_obj.info("** right before error **")
 
 
     count_of_user_apple_health_records = len(df_new_user_workout_data)
