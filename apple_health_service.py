@@ -10,6 +10,8 @@ from logging.handlers import RotatingFileHandler
 from sys import argv
 import pandas as pd
 import requests
+
+from dashboard_objects.data_source_obj import create_data_source_object_json_file
 from dashboard_objects.dependent_variables_dict import sleep_time
 from dashboard_objects.independent_variables_dict import user_correlations
 from add_data_to_db.apple_health_quantity_category import test_func_02, \
@@ -75,7 +77,6 @@ def apple_health_workouts_json_filename(user_id, timestamp_str):
 # argv[4] = bool make dashboard .json file
 # argv[5] = count_of_records_added_to_db
 ######################
-
 def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool):
 
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
@@ -86,7 +87,7 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     add_qty_cat_bool = add_qty_cat_bool == 'True'
     add_workouts_bool = add_workouts_bool == 'True'
     
-    # filename example: AppleHealthQuantityCategory-user_id1-20231229-1612.json
+    # filename json file that has new data
     apple_health_qty_cat_json_file_name = apple_health_qty_cat_json_filename(user_id, time_stamp_str)
     apple_health_workouts_json_file_name = apple_health_workouts_json_filename(user_id, time_stamp_str)
 
@@ -94,20 +95,17 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
     user_apple_workouts_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_workouts_dataframe.pkl"
 
+    #pickle filename and path
     pickle_apple_qty_cat_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
     pickle_apple_workouts_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_workouts_dataframe_pickle_file_name)
 
-    # create EXISTING Apple Health (Quantity or Category Type) df pickle file exists or db
+    # create EXISTING Apple Health dfs
     df_existing_qty_cat = make_df_existing_user_apple_quantity_category(logger_apple,user_id, pickle_apple_qty_cat_path_and_name)
-
-    # create EXISTING Apple Health WORKOUTS
     df_existing_workouts = make_df_existing_user_apple_workouts(logger_apple, user_id,pickle_apple_workouts_path_and_name)
 
     count_of_qty_cat_records_added_to_db = 0
     count_of_workout_records_to_db = 0
 
-    # At this point there still might be no data in WSDB    
-    # if add_data_bool:
     if add_qty_cat_bool:
         logger_apple.info(f"- Adding Apple Health Quantity Category Data -")
         count_of_qty_cat_records_added_to_db = add_apple_health_to_database(logger_apple, config, user_id, apple_health_qty_cat_json_file_name, 
@@ -121,25 +119,14 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     logger_apple.info(f"- count_of_workout_records_to_db: {count_of_workout_records_to_db} -")
 
     # create data source notify user
-    if count_of_qty_cat_records_added_to_db > 0 | count_of_workout_records_to_db > 0:
+    if count_of_qty_cat_records_added_to_db > 0 or count_of_workout_records_to_db > 0:
         logger_apple.info(f"- Should be making datasource json file and dashboard json files -")
-        create_data_source_object_json_file(user_id)
+        create_data_source_object_json_file(logger_apple,config, user_id)
         create_dashboard_table_object_json_file(user_id)
         # call_api_notify_completion(user_id,count_of_records_added_to_db)
 
 
 
-def call_api_notify_completion(user_id,count_of_records_added_to_db):
-    logger_apple.info(f"- WSAS sending WSAPI call to send email notification to user: {user_id} -")
-    headers = { 'Content-Type': 'application/json'}
-    payload = {}
-    payload['WS_API_PASSWORD'] = config.WS_API_PASSWORD
-    payload['user_id'] = user_id
-    payload['count_of_records_added_to_db'] = f"{count_of_records_added_to_db:,}"
-    r_email = requests.request('POST',config.API_URL + '/apple_health_subprocess_complete', headers=headers, 
-                                    data=str(json.dumps(payload)))
-    
-    return r_email.status_code
 
 def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS creating dashboard file for user: {user_id} -")
@@ -177,43 +164,18 @@ def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS COMPLETED dashboard file for user: {user_id} -")
     logger_apple.info(f"- WSAS COMPLETED dashboard file path: {json_data_path_and_name} -")
 
-# File used in Login
-def create_data_source_object_json_file(user_id):
-    logger_apple.info(f"- WSAS creating data source object file for user: {user_id} -")
-
-    list_data_source_objects = []
-
-    #get user's oura record count
-    # keys to data_source_object_oura must match WSiOS DataSourceObject
-    data_source_object_oura={}
-    data_source_object_oura['name']="Oura Ring"
-    record_count_oura = sess.query(OuraSleepDescriptions).filter_by(user_id=int(user_id)).all()
-    data_source_object_oura['recordCount']="{:,}".format(len(record_count_oura))
-    list_data_source_objects.append(data_source_object_oura)
-
-    #get user's apple health record count
-    # keys to data_source_object_apple_health must match WSiOS DataSourceObject
-    data_source_object_apple_health={}
-    data_source_object_apple_health['name']="Apple Health Data"
-    # record_count_apple_health = sess.query(AppleHealthQuantityCategory).filter_by(user_id=current_user.id).all()
-    
-    user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
-    pickle_data_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
-    df_apple_health = pd.read_pickle(pickle_data_path_and_name)
-    data_source_object_apple_health['recordCount']="{:,}".format(len(df_apple_health))
-    data_source_object_apple_health['recordCount']="{:,}".format(len(df_apple_health))
-    list_data_source_objects.append(data_source_object_apple_health)
-
-    # note: since user_id is string the code below needs convert back to int to use this `:04` shorthand
-    user_data_source_json_file_name = f"data_source_list_for_user_{int(user_id):04}.json"
-
-    json_data_path_and_name = os.path.join(config.DATA_SOURCE_FILES_DIR, user_data_source_json_file_name)
-    logger_apple.info(f"Writing file name: {json_data_path_and_name}")
-    with open(json_data_path_and_name, 'w') as file:
-        json.dump(list_data_source_objects, file)
 
 
-
+def call_api_notify_completion(user_id,count_of_records_added_to_db):
+    logger_apple.info(f"- WSAS sending WSAPI call to send email notification to user: {user_id} -")
+    headers = { 'Content-Type': 'application/json'}
+    payload = {}
+    payload['WS_API_PASSWORD'] = config.WS_API_PASSWORD
+    payload['user_id'] = user_id
+    payload['count_of_records_added_to_db'] = f"{count_of_records_added_to_db:,}"
+    r_email = requests.request('POST',config.API_URL + '/apple_health_subprocess_complete', headers=headers, 
+                                    data=str(json.dumps(payload)))
+    return r_email.status_code
 
 
 

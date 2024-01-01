@@ -3,6 +3,7 @@ import pandas as pd
 from ws_models import engine
 import os
 from datetime import datetime
+import numpy as np
 
 def test_func_02(logger_obj, test_string):
     logger_obj.info(f"- inside apple_health_quantity_category.add_to_apple_health_quantity_category_table -")
@@ -51,12 +52,27 @@ def add_apple_health_to_database(logger_obj, config, user_id, apple_json_data_fi
         df_new_user_data = pd.read_json(new_user_data_path_and_filename)
 
     # logger_obj.info(f"- df_new_user_data count : {len(df_new_user_data)} -")
-    # logger_obj.info(f"- {df_new_user_data.head(1)} -")
+    # logger_obj.info(f"- {df_new_user_data.head()} -")
+    # logger_obj.info(f"- {df_new_user_data.columns} -")
     # logger_obj.info(f"- ------------------- -")
 
     # Convert the 'value' column in both dataframes to string
-    df_new_user_data['value'] = df_new_user_data['value'].astype(str)
-    df_new_user_data['quantity'] = df_new_user_data['quantity'].astype(str)
+    try:
+        # Try converting the 'value' column to string
+        df_new_user_data['value'] = df_new_user_data['value'].astype(str)
+    except KeyError:
+        # If 'value' column does not exist, create it and fill with a placeholder string
+        df_new_user_data['value'] = np.nan
+
+    try:
+        # Try converting the 'value' column to string
+        df_new_user_data['quantity'] = df_new_user_data['quantity'].astype(str)
+    except KeyError:
+        # If 'value' column does not exist, create it and fill with a placeholder string
+        df_new_user_data['value'] = np.nan
+    # df_new_user_data['value'] = df_new_user_data['value'].astype(str)
+    # df_new_user_data['quantity'] = df_new_user_data['quantity'].astype(str)
+
     # Perform the merge on specific columns
     df_merged = pd.merge(df_new_user_data, df_existing_user_data, 
                         on=['sampleType', 'startDate', 'endDate', 'UUID'], 
