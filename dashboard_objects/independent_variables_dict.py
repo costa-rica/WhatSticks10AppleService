@@ -40,7 +40,7 @@ def user_correlations(user_id):
         # corr_sleep_heart_rate(df)
         arryIndepVarObjects_dict["independentVarName"]= "Avg Daily Workout Duration"
         arryIndepVarObjects_dict["forDepVarName"]= "Sleep Time"
-        correlation_value, obs_count = corr_sleep_workouts(df)
+        correlation_value, obs_count = corr_sleep_workouts(df_workouts)
         arryIndepVarObjects_dict["correlationValue"]= correlation_value
         arryIndepVarObjects_dict["correlationObservationCount"]= obs_count
         arryIndepVarObjects_dict["definition"]= "The avearge of daily duration recorded by all your devices and apps that share with Apple Health"
