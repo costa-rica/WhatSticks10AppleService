@@ -2,9 +2,10 @@ import os
 from ws_models import sess, OuraSleepDescriptions
 import pandas as pd
 import json
+from config_and_logger import config, logger_apple
 
-def create_data_source_object_json_file(logger_obj, config, user_id):
-    logger_obj.info(f"- WSAS creating data source object file for user: {user_id} -")
+def create_data_source_object_json_file(user_id):
+    logger_apple.info(f"- WSAS creating data source object file for user: {user_id} -")
 
     list_data_source_objects = []
 
@@ -33,7 +34,7 @@ def create_data_source_object_json_file(logger_obj, config, user_id):
     user_data_source_json_file_name = f"data_source_list_for_user_{int(user_id):04}.json"
 
     json_data_path_and_name = os.path.join(config.DATA_SOURCE_FILES_DIR, user_data_source_json_file_name)
-    logger_obj.info(f"Writing file name: {json_data_path_and_name}")
+    logger_apple.info(f"Writing file name: {json_data_path_and_name}")
     with open(json_data_path_and_name, 'w') as file:
         json.dump(list_data_source_objects, file)
 

@@ -2,15 +2,16 @@ import os
 import json
 from ws_models import sess, engine, OuraSleepDescriptions, \
     AppleHealthQuantityCategory, AppleHealthWorkout
-from ws_config import ConfigLocal, ConfigDev, ConfigProd
+# from ws_config import ConfigLocal, ConfigDev, ConfigProd
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
-import logging
-from logging.handlers import RotatingFileHandler
+# import logging
+# from logging.handlers import RotatingFileHandler
 from sys import argv
 import pandas as pd
 import requests
 
+from config_and_logger import config, logger_apple
 from dashboard_objects.data_source_obj import create_data_source_object_json_file
 from dashboard_objects.dependent_variables_dict import sleep_time
 from dashboard_objects.independent_variables_dict import user_correlations
@@ -19,35 +20,35 @@ from add_data_to_db.apple_health_quantity_category import test_func_02, \
 from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
     add_apple_workouts_to_database
 
-match os.environ.get('FLASK_CONFIG_TYPE'):
-    case 'dev':
-        config = ConfigDev()
-        print('- WhatSticks10AppleService/config: Development')
-    case 'prod':
-        config = ConfigProd()
-        print('- WhatSticks10AppleService/config: Production')
-    case _:
-        config = ConfigLocal()
-        print('- WhatSticks10AppleService/config: Local')
+# match os.environ.get('FLASK_CONFIG_TYPE'):
+#     case 'dev':
+#         config = ConfigDev()
+#         print('- WhatSticks10AppleService/config: Development')
+#     case 'prod':
+#         config = ConfigProd()
+#         print('- WhatSticks10AppleService/config: Production')
+#     case _:
+#         config = ConfigLocal()
+#         print('- WhatSticks10AppleService/config: Local')
 
-#Setting up Logger
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
-formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
+# #Setting up Logger
+# formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+# formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
 
-#initialize a logger
-logger_apple = logging.getLogger(__name__)
-logger_apple.setLevel(logging.DEBUG)
+# #initialize a logger
+# logger_apple = logging.getLogger(__name__)
+# logger_apple.setLevel(logging.DEBUG)
 
-#where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(config.APPLE_SERVICE_ROOT,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
-file_handler.setFormatter(formatter)
+# #where do we store logging information
+# file_handler = RotatingFileHandler(os.path.join(config.APPLE_SERVICE_ROOT,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+# file_handler.setFormatter(formatter)
 
-#where the stream_handler will print
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter_terminal)
+# #where the stream_handler will print
+# stream_handler = logging.StreamHandler()
+# stream_handler.setFormatter(formatter_terminal)
 
-logger_apple.addHandler(file_handler)
-logger_apple.addHandler(stream_handler)
+# logger_apple.addHandler(file_handler)
+# logger_apple.addHandler(stream_handler)
 
 
 def test_func_01(test_string):
@@ -99,19 +100,19 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     pickle_apple_workouts_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_workouts_dataframe_pickle_file_name)
 
     # create EXISTING Apple Health dfs
-    df_existing_qty_cat = make_df_existing_user_apple_quantity_category(logger_apple,user_id, pickle_apple_qty_cat_path_and_name)
-    df_existing_workouts = make_df_existing_user_apple_workouts(logger_apple, user_id,pickle_apple_workouts_path_and_name)
+    df_existing_qty_cat = make_df_existing_user_apple_quantity_category(user_id, pickle_apple_qty_cat_path_and_name)
+    df_existing_workouts = make_df_existing_user_apple_workouts(user_id,pickle_apple_workouts_path_and_name)
 
     count_of_qty_cat_records_added_to_db = 0
     count_of_workout_records_to_db = 0
 
     if add_qty_cat_bool:
         logger_apple.info(f"- Adding Apple Health Quantity Category Data -")
-        count_of_qty_cat_records_added_to_db = add_apple_health_to_database(logger_apple, config, user_id, apple_health_qty_cat_json_file_name, 
+        count_of_qty_cat_records_added_to_db = add_apple_health_to_database(user_id, apple_health_qty_cat_json_file_name, 
                                             df_existing_qty_cat, pickle_apple_qty_cat_path_and_name)
     if add_workouts_bool:
         logger_apple.info(f"- Adding Apple Health Workouts Data -")
-        count_of_workout_records_to_db = add_apple_workouts_to_database(logger_apple, config, user_id,apple_health_workouts_json_file_name,
+        count_of_workout_records_to_db = add_apple_workouts_to_database(user_id,apple_health_workouts_json_file_name,
                                             df_existing_workouts,pickle_apple_workouts_path_and_name)
 
     logger_apple.info(f"- count_of_qty_cat_records_added_to_db: {count_of_qty_cat_records_added_to_db} -")
@@ -178,11 +179,9 @@ def call_api_notify_completion(user_id,count_of_records_added_to_db):
 
 
 
-
-
 if os.environ.get('FLASK_CONFIG_TYPE') != 'local':
-    # Adjust the argument handling
-    if len(argv) > 5:
-        what_sticks_health_service(argv[1], argv[2], argv[3], argv[4], argv[5])
-    else:
-        what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])
+#     # Adjust the argument handling
+#     if len(argv) > 5:
+#         what_sticks_health_service(argv[1], argv[2], argv[3], argv[4], argv[5])
+#     else:
+    what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])

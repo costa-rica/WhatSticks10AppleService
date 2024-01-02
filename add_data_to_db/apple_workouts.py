@@ -4,17 +4,18 @@ from ws_models import engine
 import os
 from datetime import datetime
 import sqlite3 
+from config_and_logger import config, logger_apple
 
 # def get_existing_user_apple_workouts_data(user_id):
-def make_df_existing_user_apple_workouts(logger_obj, user_id,pickle_apple_workouts_path_and_name):
+def make_df_existing_user_apple_workouts(user_id,pickle_apple_workouts_path_and_name):
     if os.path.exists(pickle_apple_workouts_path_and_name):
-        logger_obj.info(f"- reading pickle file for workouts: {pickle_apple_workouts_path_and_name} -")
+        logger_apple.info(f"- reading pickle file for workouts: {pickle_apple_workouts_path_and_name} -")
         # df_existing_user_workouts_data=pd.read_pickle(pickle_apple_workouts_path_and_name)
         df_existing_workouts=pd.read_pickle(pickle_apple_workouts_path_and_name)
         return df_existing_workouts
     else:
-        logger_obj.info(f"- NO Apple Health Workouts pickle file found in: {pickle_apple_workouts_path_and_name} -")
-        logger_obj.info(f"- reading Apple Workouts from WSDB into df -")
+        logger_apple.info(f"- NO Apple Health Workouts pickle file found in: {pickle_apple_workouts_path_and_name} -")
+        logger_apple.info(f"- reading Apple Workouts from WSDB into df -")
         try:
             # Define the query using a parameterized statement for safety
             query = """
@@ -24,16 +25,16 @@ def make_df_existing_user_apple_workouts(logger_obj, user_id,pickle_apple_workou
             """
             # Execute the query and create a DataFrame
             df_existing_workouts = pd.read_sql_query(query, engine, params={'user_id': user_id})
-            logger_obj.info(f"- Successfully created Apple Workouts df from WSDB -")
+            logger_apple.info(f"- Successfully created Apple Workouts df from WSDB -")
             return df_existing_workouts
         except SQLAlchemyError as e:
-            logger_obj.info(f"An error occurred: {e}")
+            logger_apple.info(f"An error occurred: {e}")
             return None
 
 
-def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_filename,df_existing_user_workouts_data,pickle_apple_workouts_data_path_and_name):
+def add_apple_workouts_to_database(user_id,apple_workouts_filename,df_existing_user_workouts_data,pickle_apple_workouts_data_path_and_name):
 
-    logger_obj.info(f"- accessed add_apple_workouts_to_database -")
+    logger_apple.info(f"- accessed add_apple_workouts_to_database -")
     # print(f"- df_existing_user_workouts_data dtypes: {df_existing_user_workouts_data.dtypes} - ")
     # print(f"- df_existing_user_workouts_data len: {df_existing_user_workouts_data} - ")
 
@@ -53,8 +54,8 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
     df_existing_user_workouts_data['duration'] = df_existing_user_workouts_data['duration'].astype(str)
     df_existing_user_workouts_data['duration'] = df_existing_user_workouts_data['duration'].astype(str)
 
-    # logger_obj.info(f"- df_new_user_workout_data.dtypes: {df_new_user_workout_data.dtypes}")
-    # logger_obj.info(f"- df_existing_user_workouts_data.dtypes: {df_existing_user_workouts_data.dtypes}")
+    # logger_apple.info(f"- df_new_user_workout_data.dtypes: {df_new_user_workout_data.dtypes}")
+    # logger_apple.info(f"- df_existing_user_workouts_data.dtypes: {df_existing_user_workouts_data.dtypes}")
 
     # Perform the merge on specific columns
     df_merged = pd.merge(df_new_user_workout_data, df_existing_user_workouts_data, 
@@ -105,7 +106,7 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
         ### add df to database
         count_of_records_added_to_db = df_unique_new_user_data.to_sql('apple_health_workout', con=engine, if_exists='append', index=False)
     except sqlite3.IntegrityError as e:
-        logger_obj.info(f"An integrity error occurred: {e}")
+        logger_apple.info(f"An integrity error occurred: {e}")
 
 
     # Concatenate the DataFrames
@@ -113,11 +114,11 @@ def add_apple_workouts_to_database(logger_obj, config, user_id,apple_workouts_fi
 
     ### create pickle file  "user_0001_apple_workouts_dataframe.pkl"
     df_updated_user_apple_health.to_pickle(pickle_apple_workouts_data_path_and_name)
-    logger_obj.info("** right before error **")
+    logger_apple.info("** right before error **")
 
 
     count_of_user_apple_health_records = len(df_new_user_workout_data)
-    logger_obj.info(f"- count of Apple Health Workout records in db: {count_of_user_apple_health_records}")
-    logger_obj.info(f"--- add_apple_workouts_to_database COMPLETE ---")
+    logger_apple.info(f"- count of Apple Health Workout records in db: {count_of_user_apple_health_records}")
+    logger_apple.info(f"--- add_apple_workouts_to_database COMPLETE ---")
 
     return count_of_records_added_to_db
