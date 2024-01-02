@@ -2,11 +2,8 @@ import os
 import json
 from ws_models import sess, engine, OuraSleepDescriptions, \
     AppleHealthQuantityCategory, AppleHealthWorkout
-# from ws_config import ConfigLocal, ConfigDev, ConfigProd
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
-# import logging
-# from logging.handlers import RotatingFileHandler
 from sys import argv
 import pandas as pd
 import requests
@@ -19,37 +16,6 @@ from add_data_to_db.apple_health_quantity_category import test_func_02, \
     make_df_existing_user_apple_quantity_category, add_apple_health_to_database
 from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
     add_apple_workouts_to_database
-
-# match os.environ.get('FLASK_CONFIG_TYPE'):
-#     case 'dev':
-#         config = ConfigDev()
-#         print('- WhatSticks10AppleService/config: Development')
-#     case 'prod':
-#         config = ConfigProd()
-#         print('- WhatSticks10AppleService/config: Production')
-#     case _:
-#         config = ConfigLocal()
-#         print('- WhatSticks10AppleService/config: Local')
-
-# #Setting up Logger
-# formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
-# formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
-
-# #initialize a logger
-# logger_apple = logging.getLogger(__name__)
-# logger_apple.setLevel(logging.DEBUG)
-
-# #where do we store logging information
-# file_handler = RotatingFileHandler(os.path.join(config.APPLE_SERVICE_ROOT,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
-# file_handler.setFormatter(formatter)
-
-# #where the stream_handler will print
-# stream_handler = logging.StreamHandler()
-# stream_handler.setFormatter(formatter_terminal)
-
-# logger_apple.addHandler(file_handler)
-# logger_apple.addHandler(stream_handler)
-
 
 def test_func_01(test_string):
     logger_apple.info(f"- {test_string} -")
@@ -124,8 +90,6 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
         create_data_source_object_json_file( user_id)
         create_dashboard_table_object_json_file(user_id)
         # call_api_notify_completion(user_id,count_of_records_added_to_db)
-
-
 
 
 def create_dashboard_table_object_json_file(user_id):
