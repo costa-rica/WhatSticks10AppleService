@@ -121,7 +121,7 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     # create data source notify user
     if count_of_qty_cat_records_added_to_db > 0 or count_of_workout_records_to_db > 0:
         logger_apple.info(f"- Should be making datasource json file and dashboard json files -")
-        create_data_source_object_json_file(logger_apple,config, user_id)
+        create_data_source_object_json_file( user_id)
         create_dashboard_table_object_json_file(user_id)
         # call_api_notify_completion(user_id,count_of_records_added_to_db)
 
