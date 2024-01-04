@@ -10,7 +10,7 @@ import requests
 
 from config_and_logger import config, logger_apple
 from dashboard_objects.data_source_obj import create_data_source_object_json_file
-from dashboard_objects.dependent_variables_dict import sleep_time
+from dashboard_objects.dependent_variables_dict import sleep_time, excercise_time
 from dashboard_objects.independent_variables_dict import user_sleep_time_correlations, \
     user_workouts_duration_correlations
 from add_data_to_db.apple_health_quantity_category import test_func_02, \
