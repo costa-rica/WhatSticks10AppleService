@@ -1,5 +1,5 @@
 from config_and_logger import config, logger_apple
-
+import os
 
 def apple_health_qty_cat_json_filename(user_id, timestamp_str):
     return f"{config.APPLE_HEALTH_QUANTITY_CATEGORY_FILENAME_PREFIX}-user_id{user_id}-{timestamp_str}.json"
