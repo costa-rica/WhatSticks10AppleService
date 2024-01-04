@@ -6,6 +6,7 @@ from datetime import datetime
 import sqlite3 
 from config_and_logger import config, logger_apple
 
+
 # def get_existing_user_apple_workouts_data(user_id):
 def make_df_existing_user_apple_workouts(user_id,pickle_apple_workouts_path_and_name):
     if os.path.exists(pickle_apple_workouts_path_and_name):

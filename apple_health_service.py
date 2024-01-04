@@ -9,6 +9,9 @@ import pandas as pd
 import requests
 
 from config_and_logger import config, logger_apple
+from .utilities import apple_health_qty_cat_json_filename, \
+    apple_health_workouts_json_filename, create_pickle_apple_qty_cat_path_and_name, \
+    create_pickle_apple_workouts_path_and_name
 from dashboard_objects.data_source_obj import create_data_source_object_json_file
 from dashboard_objects.dependent_variables_dict import sleep_time, excercise_time
 from dashboard_objects.independent_variables_dict import user_sleep_time_correlations, \
@@ -17,6 +20,8 @@ from add_data_to_db.apple_health_quantity_category import test_func_02, \
     make_df_existing_user_apple_quantity_category, add_apple_health_to_database
 from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
     add_apple_workouts_to_database
+
+
 
 def test_func_01(test_string):
     logger_apple.info(f"- {test_string} -")
@@ -30,11 +35,11 @@ def db_diagnostics():
 
 
 
-def apple_health_qty_cat_json_filename(user_id, timestamp_str):
-    return f"{config.APPLE_HEALTH_QUANTITY_CATEGORY_FILENAME_PREFIX}-user_id{user_id}-{timestamp_str}.json"
+# def apple_health_qty_cat_json_filename(user_id, timestamp_str):
+#     return f"{config.APPLE_HEALTH_QUANTITY_CATEGORY_FILENAME_PREFIX}-user_id{user_id}-{timestamp_str}.json"
 
-def apple_health_workouts_json_filename(user_id, timestamp_str):
-    return f"{config.APPLE_HEALTH_WORKOUTS_FILENAME_PREFIX}-user_id{user_id}-{timestamp_str}.json"
+# def apple_health_workouts_json_filename(user_id, timestamp_str):
+#     return f"{config.APPLE_HEALTH_WORKOUTS_FILENAME_PREFIX}-user_id{user_id}-{timestamp_str}.json"
 
 
 ######################
@@ -58,13 +63,15 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     apple_health_qty_cat_json_file_name = apple_health_qty_cat_json_filename(user_id, time_stamp_str)
     apple_health_workouts_json_file_name = apple_health_workouts_json_filename(user_id, time_stamp_str)
 
-    # user's existing data in pickle dataframe
-    user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
-    user_apple_workouts_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_workouts_dataframe.pkl"
+    # # user's existing data in pickle dataframe
+    # user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
+    # user_apple_workouts_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_workouts_dataframe.pkl"
 
-    #pickle filename and path
-    pickle_apple_qty_cat_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
-    pickle_apple_workouts_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_workouts_dataframe_pickle_file_name)
+    # #pickle filename and path
+    # pickle_apple_qty_cat_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
+    # pickle_apple_workouts_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_workouts_dataframe_pickle_file_name)
+    pickle_apple_qty_cat_path_and_name = create_pickle_apple_qty_cat_path_and_name(user_id)
+    pickle_apple_workouts_path_and_name = create_pickle_apple_workouts_path_and_name(user_id)
 
     # create EXISTING Apple Health dfs
     df_existing_qty_cat = make_df_existing_user_apple_quantity_category(user_id, pickle_apple_qty_cat_path_and_name)
