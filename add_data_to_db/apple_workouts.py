@@ -4,7 +4,7 @@ from ws_models import engine
 import os
 from datetime import datetime
 import sqlite3 
-from config_and_logger import config, logger_apple
+from common.config_and_logger import config, logger_apple
 
 
 # def get_existing_user_apple_workouts_data(user_id):

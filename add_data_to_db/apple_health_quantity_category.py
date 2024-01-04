@@ -4,7 +4,7 @@ from ws_models import engine
 import os
 from datetime import datetime
 import numpy as np
-from config_and_logger import config, logger_apple
+from common.config_and_logger import config, logger_apple
 
 def test_func_02(test_string):
     logger_apple.info(f"- inside apple_health_quantity_category.add_to_apple_health_quantity_category_table -")

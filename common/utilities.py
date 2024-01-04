@@ -1,4 +1,4 @@
-from config_and_logger import config, logger_apple
+from common.config_and_logger import config, logger_apple
 import os
 
 def apple_health_qty_cat_json_filename(user_id, timestamp_str):

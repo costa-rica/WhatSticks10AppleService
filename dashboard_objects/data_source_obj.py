@@ -2,7 +2,7 @@ import os
 from ws_models import sess, OuraSleepDescriptions
 import pandas as pd
 import json
-from config_and_logger import config, logger_apple
+from common.config_and_logger import config, logger_apple
 
 def create_data_source_object_json_file(user_id):
     logger_apple.info(f"- WSAS creating data source object file for user: {user_id} -")

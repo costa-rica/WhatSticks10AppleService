@@ -1,24 +1,16 @@
 import pandas as pd
 from ws_analysis import create_user_qty_cat_df, corr_sleep_steps, corr_sleep_heart_rate, \
-    create_user_workouts_df, corr_sleep_workouts
-from config_and_logger import config, logger_apple
-from common.utilities import apple_health_qty_cat_json_filename, \
-    apple_health_workouts_json_filename, create_pickle_apple_qty_cat_path_and_name, \
-    create_pickle_apple_workouts_path_and_name
-from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
-    add_apple_workouts_to_database
-from add_data_to_db.apple_health_quantity_category import test_func_02, \
-    make_df_existing_user_apple_quantity_category, add_apple_health_to_database
-
+    create_user_workouts_df, corr_sleep_workouts, corr_workouts_sleep, \
+    create_df_daily_workout_duration
+from common.config_and_logger import config, logger_apple
+import os
 
 # def user_correlations(user_id):
 def user_sleep_time_correlations(user_id):
     logger_apple.info("- in user_sleep_time_correlations ")
-    pickle_apple_qty_cat_path_and_name = create_pickle_apple_qty_cat_path_and_name(user_id)
-    # df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
-    # df_qty_cat, sampleTypeListQtyCat = make_df_existing_user_apple_workouts(user_id=user_id)
-    df_qty_cat = make_df_existing_user_apple_quantity_category(user_id, pickle_apple_qty_cat_path_and_name)
-    sampleTypeListQtyCat = list(df_qty_cat.sampleType.unique())
+    # pickle_apple_qty_cat_path_and_name = create_pickle_apple_qty_cat_path_and_name(user_id)
+    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
+
     list_of_arryIndepVarObjects_dict = []
     if 'HKCategoryTypeIdentifierSleepAnalysis' in sampleTypeListQtyCat:
         arryIndepVarObjects_dict = {}
@@ -46,11 +38,7 @@ def user_sleep_time_correlations(user_id):
             arryIndepVarObjects_dict["noun"]= "daily average heart rate"
             list_of_arryIndepVarObjects_dict.append(arryIndepVarObjects_dict)
 
-        pickle_apple_workouts_path_and_name = create_pickle_apple_workouts_path_and_name(user_id)
-        # logger_apple.info("- in user_sleep_time_correlations ")
-        # df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id=user_id)
-        # df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id=user_id)
-        df_workouts = make_df_existing_user_apple_workouts(user_id,pickle_apple_workouts_path_and_name)
+        df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id)
 
         # Workouts 
         logger_apple.info("- found more than 5 workouts -")
@@ -71,7 +59,24 @@ def user_sleep_time_correlations(user_id):
 
 def user_workouts_duration_correlations(user_id):
     logger_apple.info("- in user_workouts_duration_correlations ")
-    df, list_of_user_data = create_user_qty_cat_df(user_id=user_id)
+    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
+    df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id)
+    df_daily_workouts = create_df_daily_workout_duration(df_workouts)
+    if len(df_workouts) > 5:
+        list_of_arryIndepVarObjects_dict = []
+        if 'HKCategoryTypeIdentifierSleepAnalysis' in sampleTypeListQtyCat:
+            arryIndepVarObjects_dict = {}
+            arryIndepVarObjects_dict["independentVarName"]= "Sleep Time"
+            arryIndepVarObjects_dict["forDepVarName"]= "Workout Duration"
+
+            # correlation_value, obs_count = corr_sleep_steps(df_qty_cat)
+            correlation_value, obs_count = corr_workouts_sleep(df_workouts, df_qty_cat)
+            arryIndepVarObjects_dict["correlationValue"]= correlation_value
+            arryIndepVarObjects_dict["correlationObservationCount"]= obs_count
+            arryIndepVarObjects_dict["definition"]= "The number of hours slept in the previous night"
+            arryIndepVarObjects_dict["noun"]= "hours of sleep the night before"
+            list_of_arryIndepVarObjects_dict.append(arryIndepVarObjects_dict)
+    return list_of_arryIndepVarObjects_dict
     # df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
     # list_of_arryIndepVarObjects_dict = []
     # if 'HKCategoryTypeIdentifierSleepAnalysis' in sampleTypeListQtyCat:

@@ -8,7 +8,7 @@ from sys import argv
 import pandas as pd
 import requests
 
-from config_and_logger import config, logger_apple
+from common.config_and_logger import config, logger_apple
 from common.utilities import apple_health_qty_cat_json_filename, \
     apple_health_workouts_json_filename, create_pickle_apple_qty_cat_path_and_name, \
     create_pickle_apple_workouts_path_and_name
@@ -171,7 +171,7 @@ def create_dashboard_table_object_json_file(user_id):
     json_data_path_and_name = os.path.join(config.DASHBOARD_FILES_DIR, user_data_table_array_json_file_name)
     print(f"Writing file name: {json_data_path_and_name}")
     with open(json_data_path_and_name, 'w') as file:
-        json.dump(dashboard_table_object, file)
+        json.dump(array_dashboard_table_object, file)
     
     logger_apple.info(f"- WSAS COMPLETED dashboard file for user: {user_id} -")
     logger_apple.info(f"- WSAS COMPLETED dashboard file path: {json_data_path_and_name} -")
