@@ -9,7 +9,7 @@ import pandas as pd
 import requests
 
 from config_and_logger import config, logger_apple
-from .utilities import apple_health_qty_cat_json_filename, \
+from utilities import apple_health_qty_cat_json_filename, \
     apple_health_workouts_json_filename, create_pickle_apple_qty_cat_path_and_name, \
     create_pickle_apple_workouts_path_and_name
 from dashboard_objects.data_source_obj import create_data_source_object_json_file
