@@ -11,8 +11,11 @@ from common.utilities import apple_health_qty_cat_json_filename, \
 # def user_correlations(user_id):
 def user_sleep_time_correlations(user_id):
     logger_apple.info("- in user_sleep_time_correlations ")
-    # df, list_of_user_data = create_user_qty_cat_df(user_id=user_id)
-    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
+    pickle_apple_qty_cat_path_and_name = create_pickle_apple_qty_cat_path_and_name(user_id)
+    # df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
+    # df_qty_cat, sampleTypeListQtyCat = make_df_existing_user_apple_workouts(user_id=user_id)
+    df_qty_cat = make_df_existing_user_apple_quantity_category(user_id, pickle_apple_qty_cat_path_and_name)
+    sampleTypeListQtyCat = list(df_qty_cat.sampleType.unique())
     list_of_arryIndepVarObjects_dict = []
     if 'HKCategoryTypeIdentifierSleepAnalysis' in sampleTypeListQtyCat:
         arryIndepVarObjects_dict = {}
@@ -40,8 +43,11 @@ def user_sleep_time_correlations(user_id):
             arryIndepVarObjects_dict["noun"]= "daily average heart rate"
             list_of_arryIndepVarObjects_dict.append(arryIndepVarObjects_dict)
 
+        pickle_apple_workouts_path_and_name = create_pickle_apple_workouts_path_and_name(user_id)
         # logger_apple.info("- in user_sleep_time_correlations ")
-        df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id=user_id)# <-- error
+        # df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id=user_id)
+        # df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id=user_id)
+        df_workouts = make_df_existing_user_apple_workouts(user_id,pickle_apple_workouts_path_and_name)
 
         # Workouts 
         logger_apple.info("- found more than 5 workouts -")
