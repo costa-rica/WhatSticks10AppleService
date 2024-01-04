@@ -2,6 +2,11 @@ import pandas as pd
 from ws_analysis import create_user_qty_cat_df, corr_sleep_steps, corr_sleep_heart_rate, \
     create_user_workouts_df, corr_sleep_workouts
 from config_and_logger import config, logger_apple
+from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
+    add_apple_workouts_to_database
+from common.utilities import apple_health_qty_cat_json_filename, \
+    apple_health_workouts_json_filename, create_pickle_apple_qty_cat_path_and_name, \
+    create_pickle_apple_workouts_path_and_name
 
 # def user_correlations(user_id):
 def user_sleep_time_correlations(user_id):
@@ -57,7 +62,7 @@ def user_sleep_time_correlations(user_id):
 
 def user_workouts_duration_correlations(user_id):
     logger_apple.info("- in user_workouts_duration_correlations ")
-    # df, list_of_user_data = create_user_qty_cat_df(user_id=user_id)
+    df, list_of_user_data = create_user_qty_cat_df(user_id=user_id)
     # df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
     # list_of_arryIndepVarObjects_dict = []
     # if 'HKCategoryTypeIdentifierSleepAnalysis' in sampleTypeListQtyCat:
