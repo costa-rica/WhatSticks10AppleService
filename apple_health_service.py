@@ -121,7 +121,7 @@ def create_dashboard_table_object_json_file(user_id):
 
     # # keys to indep_var_object must match WSiOS IndepVarObject
     # list_of_dictIndepVarObjects = user_correlations(user_id = user_id)# old
-    list_of_dictIndepVarObjects = user_workouts_duration_correlations(user_id = user_id,timezone_str=timezone_str)# new
+    list_of_dictIndepVarObjects = user_workouts_duration_correlations(user_id,timezone_str)# new
     arry_indep_var_objects = []
 
     for dictIndepVarObjects in list_of_dictIndepVarObjects:
