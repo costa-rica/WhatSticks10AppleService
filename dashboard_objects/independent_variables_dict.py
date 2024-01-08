@@ -6,10 +6,11 @@ from common.config_and_logger import config, logger_apple
 import os
 
 # def user_correlations(user_id):
-def user_sleep_time_correlations(user_id):
+def user_sleep_time_correlations(user_id, timezone_str):
     logger_apple.info("- in user_sleep_time_correlations ")
     # pickle_apple_qty_cat_path_and_name = create_pickle_apple_qty_cat_path_and_name(user_id)
-    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
+    # df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
+    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id,user_tz_str=timezone_str)
 
     list_of_arryIndepVarObjects_dict = []
     if 'HKCategoryTypeIdentifierSleepAnalysis' in sampleTypeListQtyCat:
@@ -38,7 +39,7 @@ def user_sleep_time_correlations(user_id):
             arryIndepVarObjects_dict["noun"]= "daily average heart rate"
             list_of_arryIndepVarObjects_dict.append(arryIndepVarObjects_dict)
 
-        df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id)
+        df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id,user_tz_str=timezone_str)
 
         # Workouts 
         logger_apple.info("- found more than 5 workouts -")
@@ -57,10 +58,10 @@ def user_sleep_time_correlations(user_id):
 
     return list_of_arryIndepVarObjects_dict
 
-def user_workouts_duration_correlations(user_id):
+def user_workouts_duration_correlations(user_id,user_tz_str):
     logger_apple.info("- in user_workouts_duration_correlations ")
-    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
-    df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id)
+    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id,user_tz_str=timezone_str)
+    df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id,user_tz_str=timezone_str)
     df_daily_workouts = create_df_daily_workout_duration(df_workouts)
     if len(df_workouts) > 5:
         list_of_arryIndepVarObjects_dict = []

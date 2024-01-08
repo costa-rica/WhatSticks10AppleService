@@ -1,7 +1,7 @@
 import os
 import json
 from ws_models import sess, engine, OuraSleepDescriptions, \
-    AppleHealthQuantityCategory, AppleHealthWorkout
+    AppleHealthQuantityCategory, AppleHealthWorkout, Users
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from sys import argv
@@ -21,8 +21,6 @@ from add_data_to_db.apple_health_quantity_category import test_func_02, \
 from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
     add_apple_workouts_to_database
 
-
-
 def test_func_01(test_string):
     logger_apple.info(f"- {test_string} -")
     add_to_apple_health_quantity_category_table(logger_apple, test_string)
@@ -33,22 +31,6 @@ def db_diagnostics():
     logger_apple.info(f"- AppleHealthWorkout record count: {len(workout_db_all)} -")
     logger_apple.info(f"- AppleHealthQuantityCategory record count: {len(qty_cat_db_all)} -")
 
-
-
-# def apple_health_qty_cat_json_filename(user_id, timestamp_str):
-#     return f"{config.APPLE_HEALTH_QUANTITY_CATEGORY_FILENAME_PREFIX}-user_id{user_id}-{timestamp_str}.json"
-
-# def apple_health_workouts_json_filename(user_id, timestamp_str):
-#     return f"{config.APPLE_HEALTH_WORKOUTS_FILENAME_PREFIX}-user_id{user_id}-{timestamp_str}.json"
-
-
-######################
-# Main WSAS function #
-# argv[1] = user_id
-# argv[2] = time stamp string for file name
-# argv[3] = add_qty_cat_bool
-# argv[4] = add_workouts_bool
-######################
 def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool):
 
     logger_apple.info(f"- accessed What Sticks 10 Apple Service (WSAS) -")
@@ -102,7 +84,7 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
 
 def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS creating dashboard file for user: {user_id} -")
-    
+    timezone_str = sess.get(User,int(user_id)).timezone
     array_dashboard_table_object = []
 
     ############# CREATE sleep_time dashbaord object ############################
@@ -111,7 +93,7 @@ def create_dashboard_table_object_json_file(user_id):
 
     # # keys to indep_var_object must match WSiOS IndepVarObject
     # list_of_dictIndepVarObjects = user_correlations(user_id = user_id)# old
-    list_of_dictIndepVarObjects = user_sleep_time_correlations(user_id = user_id)# new
+    list_of_dictIndepVarObjects = user_sleep_time_correlations(user_id = user_id,timezone_str=timezone_str)# new
     arry_indep_var_objects = []
     # for arryIndepVarObjects_dict in list_of_arryIndepVarObjects_dict:
     for dictIndepVarObjects in list_of_dictIndepVarObjects:
@@ -139,7 +121,7 @@ def create_dashboard_table_object_json_file(user_id):
 
     # # keys to indep_var_object must match WSiOS IndepVarObject
     # list_of_dictIndepVarObjects = user_correlations(user_id = user_id)# old
-    list_of_dictIndepVarObjects = user_workouts_duration_correlations(user_id = user_id)# new
+    list_of_dictIndepVarObjects = user_workouts_duration_correlations(user_id = user_id,timezone_str=timezone_str)# new
     arry_indep_var_objects = []
 
     for dictIndepVarObjects in list_of_dictIndepVarObjects:
@@ -190,10 +172,12 @@ def call_api_notify_completion(user_id,count_of_records_added_to_db):
     return r_email.status_code
 
 
-
+######################
+# Main WSAS function #
+# argv[1] = user_id
+# argv[2] = time stamp string for file name
+# argv[3] = add_qty_cat_bool
+# argv[4] = add_workouts_bool
+######################
 if os.environ.get('FLASK_CONFIG_TYPE') != 'local':
-#     # Adjust the argument handling
-#     if len(argv) > 5:
-#         what_sticks_health_service(argv[1], argv[2], argv[3], argv[4], argv[5])
-#     else:
     what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])
