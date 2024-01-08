@@ -84,7 +84,7 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
 
 def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS creating dashboard file for user: {user_id} -")
-    timezone_str = sess.get(User,int(user_id)).timezone
+    timezone_str = sess.get(Users,int(user_id)).timezone
     array_dashboard_table_object = []
 
     ############# CREATE sleep_time dashbaord object ############################
