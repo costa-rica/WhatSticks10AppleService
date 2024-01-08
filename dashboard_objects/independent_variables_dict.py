@@ -60,8 +60,8 @@ def user_sleep_time_correlations(user_id, timezone_str):
 
 def user_workouts_duration_correlations(user_id,user_tz_str):
     logger_apple.info("- in user_workouts_duration_correlations ")
-    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id,user_tz_str=timezone_str)
-    df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id,user_tz_str=timezone_str)
+    df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id,user_tz_str=user_tz_str)
+    df_workouts, sampleTypeListWorkouts = create_user_workouts_df(user_id,user_tz_str=user_tz_str)
     df_daily_workouts = create_df_daily_workout_duration(df_workouts)
     if len(df_workouts) > 5:
         list_of_arryIndepVarObjects_dict = []
@@ -78,17 +78,4 @@ def user_workouts_duration_correlations(user_id,user_tz_str):
             arryIndepVarObjects_dict["noun"]= "hours of sleep the night before"
             list_of_arryIndepVarObjects_dict.append(arryIndepVarObjects_dict)
     return list_of_arryIndepVarObjects_dict
-    # df_qty_cat, sampleTypeListQtyCat = create_user_qty_cat_df(user_id=user_id)
-    # list_of_arryIndepVarObjects_dict = []
-    # if 'HKCategoryTypeIdentifierSleepAnalysis' in sampleTypeListQtyCat:
-    #     arryIndepVarObjects_dict = {}
-    #     # Steps
-    #     if 'HKQuantityTypeIdentifierStepCount' in sampleTypeListQtyCat:
-    #         arryIndepVarObjects_dict["independentVarName"]= "Step Count"
-    #         arryIndepVarObjects_dict["forDepVarName"]= "Sleep Time"
-    #         correlation_value, obs_count = corr_sleep_steps(df_qty_cat)
-    #         arryIndepVarObjects_dict["correlationValue"]= correlation_value
-    #         arryIndepVarObjects_dict["correlationObservationCount"]= obs_count
-    #         arryIndepVarObjects_dict["definition"]= "The count of your daily steps"
-    #         arryIndepVarObjects_dict["noun"]= "daily step count"
-    #         list_of_arryIndepVarObjects_dict.append(arryIndepVarObjects_dict)
+
