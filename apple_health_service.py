@@ -16,7 +16,7 @@ from dashboard_objects.data_source_obj import create_data_source_object_json_fil
 from dashboard_objects.dependent_variables_dict import sleep_time, excercise_time
 from dashboard_objects.independent_variables_dict import user_sleep_time_correlations, \
     user_workouts_duration_correlations
-from add_data_to_db.apple_health_quantity_category import test_func_02, \
+from add_data_to_db.apple_health_quantity_category import \
     make_df_existing_user_apple_quantity_category, add_apple_health_to_database
 from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
     add_apple_workouts_to_database
