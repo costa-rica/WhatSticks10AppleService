@@ -45,13 +45,7 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
     apple_health_qty_cat_json_file_name = apple_health_qty_cat_json_filename(user_id, time_stamp_str)
     apple_health_workouts_json_file_name = apple_health_workouts_json_filename(user_id, time_stamp_str)
 
-    # # user's existing data in pickle dataframe
-    # user_apple_health_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_health_dataframe.pkl"
-    # user_apple_workouts_dataframe_pickle_file_name = f"user_{int(user_id):04}_apple_workouts_dataframe.pkl"
-
-    # #pickle filename and path
-    # pickle_apple_qty_cat_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_health_dataframe_pickle_file_name)
-    # pickle_apple_workouts_path_and_name = os.path.join(config.DATAFRAME_FILES_DIR, user_apple_workouts_dataframe_pickle_file_name)
+    # create pickle file name
     pickle_apple_qty_cat_path_and_name = create_pickle_apple_qty_cat_path_and_name(user_id)
     pickle_apple_workouts_path_and_name = create_pickle_apple_workouts_path_and_name(user_id)
 
@@ -91,11 +85,10 @@ def create_dashboard_table_object_json_file(user_id):
     # keys to dashboard_table_object must match WSiOS DashboardTableObject
     dashboard_table_object = sleep_time()
 
-    # # keys to indep_var_object must match WSiOS IndepVarObject
-    # list_of_dictIndepVarObjects = user_correlations(user_id = user_id)# old
+    # keys to indep_var_object must match WSiOS IndepVarObject
     list_of_dictIndepVarObjects = user_sleep_time_correlations(user_id = user_id,timezone_str=timezone_str)# new
     arry_indep_var_objects = []
-    # for arryIndepVarObjects_dict in list_of_arryIndepVarObjects_dict:
+
     for dictIndepVarObjects in list_of_dictIndepVarObjects:
         if dictIndepVarObjects.get('correlationValue') != "insufficient data":
             logger_apple.info(f"- {dictIndepVarObjects.get('name')} (indep var) correlation with {dictIndepVarObjects.get('depVarName')} (dep var): {dictIndepVarObjects.get('correlationValue')} -")
@@ -119,8 +112,7 @@ def create_dashboard_table_object_json_file(user_id):
     # keys to dashboard_table_object must match WSiOS DashboardTableObject
     dashboard_table_object = excercise_time()
 
-    # # keys to indep_var_object must match WSiOS IndepVarObject
-    # list_of_dictIndepVarObjects = user_correlations(user_id = user_id)# old
+    # keys to indep_var_object must match WSiOS IndepVarObject
     list_of_dictIndepVarObjects = user_workouts_duration_correlations(user_id,timezone_str)# new
     arry_indep_var_objects = []
 
