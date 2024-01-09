@@ -7,7 +7,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sys import argv
 import pandas as pd
 import requests
-
 from common.config_and_logger import config, logger_apple
 from common.utilities import apple_health_qty_cat_json_filename, \
     apple_health_workouts_json_filename, create_pickle_apple_qty_cat_path_and_name, \
@@ -20,6 +19,15 @@ from add_data_to_db.apple_health_quantity_category import \
     make_df_existing_user_apple_quantity_category, add_apple_health_to_database
 from add_data_to_db.apple_workouts import make_df_existing_user_apple_workouts, \
     add_apple_workouts_to_database
+
+import queue
+import threading
+import time
+
+# Define the queue and worker threads
+job_queue = queue.Queue(maxsize=5)  # Conservative queue size
+num_worker_threads = 2  # Conservative number of worker threads
+
 
 def test_func_01(test_string):
     logger_apple.info(f"- {test_string} -")
@@ -75,6 +83,7 @@ def what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_wo
         create_dashboard_table_object_json_file(user_id)
         # call_api_notify_completion(user_id,count_of_records_added_to_db)
 
+    logger_apple.info(f"- what_sticks_health_service Completed -")
 
 def create_dashboard_table_object_json_file(user_id):
     logger_apple.info(f"- WSAS creating dashboard file for user: {user_id} -")
@@ -171,5 +180,38 @@ def call_api_notify_completion(user_id,count_of_records_added_to_db):
 # argv[3] = add_qty_cat_bool
 # argv[4] = add_workouts_bool
 ######################
-if os.environ.get('FLASK_CONFIG_TYPE') != 'local':
-    what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])
+# if os.environ.get('FLASK_CONFIG_TYPE') != 'local':
+#     what_sticks_health_service(argv[1], argv[2], argv[3], argv[4])
+
+
+
+def worker():
+    while True:
+        # Get the next task from the queue
+        user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool = job_queue.get()
+        try:
+            what_sticks_health_service(user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool)
+        finally:
+            # Signal task completion
+            job_queue.task_done()
+
+def add_job_to_queue(user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool):
+    job_queue.put((user_id, time_stamp_str, add_qty_cat_bool, add_workouts_bool))
+
+# Initialize and start worker threads
+for i in range(num_worker_threads):
+    t = threading.Thread(target=worker)
+    t.daemon = True  # Daemon threads will shut down when the main thread exits
+    t.start()
+
+# Example of adding a job to the queue
+# add_job_to_queue('user_id_example', 'time_stamp_str_example', 'True', 'True')
+
+# Main WSAS function
+if __name__ == "__main__":
+    if os.environ.get('FLASK_CONFIG_TYPE') != 'local':
+        # Instead of directly calling what_sticks_health_service,
+        # we add the job to the queue
+        add_job_to_queue(argv[1], argv[2], argv[3], argv[4])
+
+
